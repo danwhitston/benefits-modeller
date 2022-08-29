@@ -57,6 +57,28 @@ The financial requirements to claim UC are that claimant(s) do not have:
 * too high an income
 * savings and capital above £16000
 
-The income ceiling ('too high an income') is not a fixed number - instead it refers to an income which is high enough that no UC would be paid, due to the reduction in UC payments that results from income.
+The income ceiling ('too high an income') is not a fixed number - instead it refers to an income which is high enough that no UC would be paid, due to the reduction in UC payments that results from income. This introduces a dependency between this ruleset and rule 3, the expected amount.
 
-## Rule 3 - 
+## Rule 3 - How much Universal Credit do you get?
+
+Source: p34-38
+
+Much of the detail on calculation of amounts in this section of the handbook simply repeats information contained in other sections, leaving a relatively simple ruleset. Within an assessment period, per steps four and five on page 38:
+
+`Universal Credit entitlement = maximum amount - earnings taper - unearned income`
+
+There is also Transitional Protection, but this only applies after July 2019, so is not a concern for our model. The following rules define each of the terms
+
+## Rule 4 - How much is your maximum amount of UC?
+
+Source: p59-71
+
+The UC maximum amount is the sum of:
+
+* The standard UC allowance, which is £251.77 for a single claimant aged under 25, £317.82 for a single claimant aged 25 or over, £395.20 for a claiming couple both aged under 25, £498.89 for a claiming couple where at least one person is aged 25 or over.
+* The child element
+
+## Rule 5 - What is the earnings taper?
+
+## Rule 6 - What is unearned income for UC?
+
