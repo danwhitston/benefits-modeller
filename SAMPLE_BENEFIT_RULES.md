@@ -4,6 +4,8 @@ Objective 1 of the project is to create a sample set of benefit rules and test c
 
 ## Limits to the model
 
+The main limitation of the model is that we are modelling a subset of the overal benefits rules, to establish household benefits eligibility at the date of first claim, where the first claim date is in the period of validity of the handbook, i.e. 5/3/2018 to 4/3/2019. For now, the subset is Universal Credit, in full service areas. These limitations are explained further in the descriptions of benefits rules.
+
 ### Location
 
 Per p3-4 of the handbook, the handbook's rules apply to England and Wales. Scotland has broadly the same legislation but has the power to diverge. Northern Ireland has separate legislation on benefits and tax credits, although the systems are similar in practice. Beyond this, where a claimant lives has further impact on several aspects of benefits - there are local taxes and benefits such as council tax and discretionary housing payments; the council tax also varies according to the designated property band of the claimant's home and their household status. (p XX)
@@ -14,20 +16,9 @@ In common with all rules being discussed, the rules have changed in the years si
 
 Since the handbook we're using as a basis for our modelling only applies to a limited timespan, we will limit our modelling to claims with a date of new claim falling within the period of validity. The handbook's acknowledgements (p.iv) state that the law covered in the book was correct on 5/3/2018, so we shall set the limit for new claim dates to between 5/3/2018 and 4/3/2019, for now. Likewise, we will not model payment dates outside of those lower and upper limits.
 
-### Changes in claimant eligibility
-
-There are many rules regarding the handling of a change to eligibility: when the change is determined to have taken place, when benefits change from, the impact of 
-
 ### Payments vs eligibility
 
 There are situations in which someone's eligibility for a benefit is not established until after the point where that benefit should have been paid. Sometimes this results in payment being backdated, i.e. paid at a later point. In other circumstances, the payment may not be made up at a later point. Either way, we're looking to model benefit eligibility rather than the payment of eligible and claimed benefits, which has many rules of its own and relies implicitly on the history of payments made to a claimant.
-
-### Transition between legacy benefits and Universal Credit
-
-
-### Claimants with more than two children
-
-
 
 ## Rule 1 - When you come under the universal credit system
 
@@ -82,7 +73,7 @@ Much of the detail on calculation of amounts in this section of the handbook sim
 
 `Universal Credit entitlement = maximum amount - earnings taper - unearned income`
 
-The terms are defined in rules 4, 5 and 6, respectively. There is also a set of rules for something called Transitional Protection, but this only applies after July 2019, so is not a concern for our model.
+The terms are defined in rules 4, 5 and 6, respectively. There is also a set of rules for something called Transitional Protection, but this only applies after July 2019, so is not a concern for our model. Where relevant, the time period used for any value calculated over time in UC (e.g. rent being paid, childcare cost) is £ per month, and .
 
 ## Rule 4 - How much is your maximum amount of UC?
 
@@ -99,9 +90,19 @@ The UC maximum amount is the sum of:
 
 ## Rule 5 - What is the earnings taper?
 
+Source: p36-37
+
+To limit the scope of the model, we'll assume that claimants / claimant couples are not eligible for a work allowance. With this in mind:
+
+`Earnings taper = net earnings x 0.63`
+
+where net earnings refers to monthly earned income after tax, national insurance, and pension contributions. If a couple are claiming, the sum of the net earnings of both claimants is used.
 
 ## Rule 6 - What is unearned income for UC?
 
+Source: p37
+
+This can include income from a large range of unearned sources, including certain other benefits, income from capital including rental income, and so on. No taper is applied to unearned income, so the full value is counted against the UC maximum amount.
 
 ## Rule 7 - The standard UC allowance
 
@@ -172,3 +173,49 @@ There are further conditions, but they do not affect the basic rules. There is a
 
 Source: p72-106
 
+The rules surrounding housing costs eligibility are complex, and would be unrewarding to include in our current model, since they largely consist of a long array of conditions which would exclude a claimant from eligibility, and our modelling interest is primarily in the interaction of rules. Accordingly, a basic model is described in the following sections, which assumes those conditions are satisfied and a claimant is eligible.
+
+A claimant / claimant couple may have the following statuses:
+
+* Ineligible for housing costs or not claiming them
+* Private tenant
+* Tenant of a registered social landlord
+* Owner-occupier paying mandatory service charges
+
+A claimant / couple who do not or cannot claim for housing costs get no contribution from this to their UC maximum amount. Some of the statuses that lead to ineligibility introduce requirements on other rules, and these are not modelled. For example an 18-22 year old claimant is usually ineligible for a housing element, and not modelling this means that it's possible for a claim modelled in our subset of the rules to break rules that are present in the full benefit system.
+
+If any of the remaining three status return a value that is 0 or less than 0, then this has the same effect as being ineligible for housing costs.
+
+### Private tenant
+
+Source: p94-95
+
+The housing costs element for a private tenant is calculated as:
+
+`Private tenant housing costs element = minimum of ('core rent' and 'cap rent') - non-dependent deduction`
+
+where
+
+`core rent = liable rent x number of relevant family members / total number of liable people` (p96)
+
+`cap rent = local housing allowance for property with your allowed number of bedrooms` (p97)
+
+`non-dependent deduction = £72.16 for each non-dependent who is resident and in your extended benefit unit` (p93)
+
+The local housing allowance is an amount that varies by Broad Rental Market Area, i.e. house location, and by allowed number of bedrooms, i.e. the number of bedrooms deemed appropriate for the occupants of the house.
+
+### Tenant of a registered social landlord
+
+Source: p98-99
+
+The calculation for a social tenancy is:
+
+`Social tenant housing costs element = rent - bedroom tax`
+
+where bedroom tax is 0 if you have the allowed number of bedrooms for your family size, rent x 0.14 if you have one bedroom more than allowed, and rent x 0.25 if you have two or more bedrooms above your allowance.
+
+### Owner-occupier paying mandatory service charges
+
+Source: p101-104
+
+While e.g. mortgage repayments are not covered by UC, unavoidable service charges excluding charges for utilities such as water and electricity can be covered. However, there is a nine month qualifying period, so UC claimants who are owner-occupiers of their home will not receive any housing costs element until they have been claiming UC for nine months. There are several caveats to this rule, as always.
