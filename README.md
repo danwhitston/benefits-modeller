@@ -6,6 +6,8 @@ This repository contains code, examples, and documentation for a programmable mo
 
 The engine is written using a custom-created DSL called Ben. A grammar, parser, and runner for Ben are also included in the repo. Code written in Ben has the filename extension `.ben`.
 
+## Development areas
+
 The project is being developed in four distinct stages:
 
 1. Create a sample set of benefit rules and test cases
@@ -15,13 +17,13 @@ The project is being developed in four distinct stages:
 
 Each stage is documented below, with links to corresponding files.
 
-## 1. Create a sample set of benefit rules and test cases
+### 1. Create a sample set of benefit rules and test cases
 
 The sample set of benefit rules can be found at [./SAMPLE_BENEFIT_RULES.md](./SAMPLE_BENEFIT_RULES.md).
 
 The sample test cases can be found at [./SAMPLE_TEST_CASES.md](./SAMPLE_TEST_CASES.md).
 
-## 2. Define a language for expressing benefit rules
+### 2. Define a language for expressing benefit rules
 
 The informal language definition can be found at [./LANGUAGE_DERIVATION.md](./LANGUAGE_DERIVATION.md).
 
@@ -29,7 +31,7 @@ The rules, expressed in the newly defined language, can be found at [./src/rules
 
 The test cases, expressed in the newly defined language, can be found at [./src/tests.ben](./src/tests.ben).
 
-## 3. Create a parser to parse the benefit rule language
+### 3. Create a parser to parse the benefit rule language
 
 The parser generator ANTLR 4 was used to generate the language parser.
 
@@ -39,7 +41,7 @@ Parser file
 
 To generate a parser from the grammar defined by the two files, run `XXXXXX`.
 
-## 4. Create a runner that takes language code and sample data
+### 4. Create a runner that takes language code and sample data
 
 ## Installation
 
