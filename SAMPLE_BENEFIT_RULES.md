@@ -73,7 +73,7 @@ Much of the detail on calculation of amounts in this section of the handbook sim
 
 `Universal Credit entitlement = maximum amount - earnings taper - unearned income`
 
-The terms are defined in rules 4, 5 and 6, respectively. There is also a set of rules for something called Transitional Protection, but this only applies after July 2019, so is not a concern for our model. Where relevant, the time period used for any value calculated over time in UC (e.g. rent being paid, childcare cost) is £ per month, and .
+The terms are defined in rules 4, 5 and 6, respectively. There is also a set of rules for something called Transitional Protection, but this only applies after July 2019, so is not a concern for our model. Where relevant, the time period used for any value calculated over time in UC (e.g. rent being paid, childcare cost) is £ per month.
 
 ## Rule 4 - How much is your maximum amount of UC?
 
@@ -92,11 +92,13 @@ The UC maximum amount is the sum of:
 
 Source: p36-37
 
-To limit the scope of the model, we'll assume that claimants / claimant couples are not eligible for a work allowance. With this in mind:
+`Earnings taper = maximum of 0 or (net earnings - work allowance) x 0.63`
 
-`Earnings taper = net earnings x 0.63`
+where
 
-where net earnings refers to monthly earned income after tax, national insurance, and pension contributions. If a couple are claiming, the sum of the net earnings of both claimants is used.
+`net earnings` is the monthly earned income after tax, national insurance, and pension contributions. If a couple are claiming, the sum of the net earnings of both claimants is used.
+
+`work allowance` is counted if the claimant(s) are responsible for a child or have limited capacity to work. If counted, then the value is £198 if there is a housing costs element (i.e. rule 12 has a greater-than-zero result) or £409 if there is no housing costs element. Otherwise, it's £0.
 
 ## Rule 6 - What is unearned income for UC?
 
