@@ -10,7 +10,7 @@ Taking a bottom-up approach, we can identify the individual pieces of data and l
 
 The test cases rely on (i) setting known values, which could be inputs or outputs, and (ii) asserting that one or more unknown values can be inferred from those that are known.
 
-## Datatypes - types of operand
+## Datatypes
 
 The rules as described lend themselves to representation using strongly typed objects, since each rule always applies to the same type of value and produces the same type of output.
 
@@ -38,11 +38,9 @@ All money in the sample rules is in pounds and pence, normally written like £12
 
 We need to support addition and subtraction (where both operands are money), and also multiplication (where one operand is an integer or a fraction) and division (where the denominator is an integer).
 
+We define a variable as Money by writing `Money housing_costs_element`.
+
 Values of type money are formatted as `£1234.56`, with no leading 0s. The pence element is optional, so e.g. `£1234` is also valid.
-
-### Fraction
-
-There are places in the model where values are divided. It is possible for SMT solvers to handle values as fractions, which enables lossless comparison and presentation of results. Currently, there is no plan to deliberately incorporate that into modelling. Where division does occur, for example when calculating the core rent for private tenants in rule 12, the numerator is a money value, and the result is therefore a money value whose accuracy is limited to the nearest penny.
 
 ### Percent
 
@@ -72,21 +70,69 @@ There are rules that can place a claim in one of a list of situations, rather th
 
 To represent Enum values, we define the possible values of an Enum variable, using e.g. `Enum housing_type(none, private, social, owner_occupier)`, and reference a specific value by writing `housing_type.private`.
 
+### Fraction - not implemented
+
+There are places in the model where values are divided. It is possible for SMT solvers to handle values as fractions, which enables lossless comparison and presentation of results. Currently, there is no plan to deliberately incorporate that into modelling. Where division does occur, for example when calculating the core rent for private tenants in rule 12, the numerator is a money value, and the result is therefore a money value whose accuracy is limited to the nearest penny.
+
+### List or array - not implemented
+
+The wider benefit system models eligibility for an arbitrary number of household members, including an arbitrary number of children. Eligibility and amounts vary both with the characteristics of each individual, and by their position in the overall list, ordered on some characteristic.
+
 ## Operators
 
-### ==
+### Equality: ==
 
-### < and >
+### Less-than and greater-than: < and >
 
-### <= and >=
+Compare two operands of the same type, in the form `a < b`. The expression is true if the left-hand operand is less than the right-hand one, otherwise false. The expression `a > b` returns the same result as `b < a`.
 
-### + and -
+Supported types include Date (for example, we know that in this model `date_of_claim < '2019-03-04'` is true), Integer. Both operands must be the same type.
 
-### *
+### Less-than-or-equal-to and greater-than-or-equal-to: <= and >=
 
-### /
+Compare two operands of the same type, in the form `a <= b`. The expression is true if the left hand operand is equal to or less than the right-hand one, otherwise false. The expression `a <= b` is the same as `b >= a`.
 
-### max()
+Supported types include Date, Integer. Both operands must be the same type.
+
+### Addition: +
+
+`a + b` returns the sum of the two operands. Both operands must be the same type. Supported types include Integer, Money.
+
+### Zero-bounded subtraction: ~-
+
+A noteworthy aspect of the current set of rules is that any expression involving subtraction treats a negative result as 0 (Integer) or £0 (Money). It's possible to support this by allowing negative values for Integer and Money types, then defining a `max(a, 0)` function to manually round up negative values to 0. I've decided instead to try replacing the standard minus operator with `~-`. This is the only operator that is substantially out of alignment with common operator definitions in other languages.
+
+`a ~- b` returns the left-hand operand minus the right-hand operand if `b < a`, otherwise it returns 0 or £0. Both operands must be the same type and the result is the same type as the operands. Supported types include Integer, Money.
+
+### Multiplication: *
+
+`a * b` returns the product of the two values. Supported types include Integer, Percent, Money, in the following combinations:
+
+* Both operands are Integer, and the result is Integer.
+* One operand is Money, the other is Integer, and the result is Money.
+* One operand is Money, the other is Percent, and the result is Money. This implies that the result is rounded to the nearest penny.
+
+### Division: /
+
+`a / b` is required for the private tenant calculation in rule 12, and returns the left-hand side divided by the right-hand side. 
+
+### Minimum: min()
+
+Rule 11 has an upper bound for the childcare allowance, which can be represented with `min(a, £646.35)` for one child, where `a` is a Money value representing 85% of the childcare cost and £646.35 is the maximum repayment for one child. It can also be thought of as `if (a < b) then a else b`.
+
+Supported types include Integer, Money, and potentially Date.
+
+### Conditional: if then else
+
+A conditional expression takes the form `if a then b else c`, where `a` is Boolean, and `b` and `c` must have the same type as each other, which in turn is the same type as the return value of the expression. There's no reason to limit what that type is.
+
+### Conditional: case when when not implemented
+
+A form of `if then else` with an arbitrary number of comparisons, specifically adapted for ranges of values in this context. I've yet to find rules that require this in the current model, though.
+
+### Maximum: max() - not implemented
+
+As discussed earlier, `max(a, b)` would be needed to set a zero lower bound on subtraction if we didn't use zero-bounded subtraction. There don't appear to be any other uses in the present model, so there is no need to implement this operator at present.
 
 ### Splitting operands 
 
