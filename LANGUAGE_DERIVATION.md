@@ -114,7 +114,7 @@ A noteworthy aspect of the current set of rules is that any expression involving
 
 ### Division: /
 
-`a / b` is required for the private tenant calculation in rule 12, and returns the left-hand side divided by the right-hand side. 
+`a / b` is required for the private tenant calculation in rule 12, and returns the left-hand side divided by the right-hand side.
 
 ### Minimum: min()
 
@@ -126,15 +126,10 @@ Supported types include Integer, Money, and potentially Date.
 
 A conditional expression takes the form `if a then b else c`, where `a` is Boolean, and `b` and `c` must have the same type as each other, which in turn is the same type as the return value of the expression. There's no reason to limit what that type is.
 
-### Conditional: case when when not implemented
+### Conditional: case when when - not implemented
 
 A form of `if then else` with an arbitrary number of comparisons, specifically adapted for ranges of values in this context. I've yet to find rules that require this in the current model, though.
 
 ### Maximum: max() - not implemented
 
 As discussed earlier, `max(a, b)` would be needed to set a zero lower bound on subtraction if we didn't use zero-bounded subtraction. There don't appear to be any other uses in the present model, so there is no need to implement this operator at present.
-
-### Splitting operands 
-
-
-
