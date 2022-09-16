@@ -1,0 +1,255 @@
+# This is a datatype more than a variable
+Enum Housing_type(none, private, social, owner_occupier)
+
+# We set up variables before invoking them
+# Some of these can be converted to functions later
+# There are unmodelled dependencies contained in these variables
+# For example, age_of_claimant determines claimant_is_below_pension_age
+Boolean rolled_out_to_full_service
+Date date_of_claim
+Integer number_of_children
+Boolean is_uc_eligible_young_person
+Boolean is_couple
+Number age_of_claimant
+Boolean claimant_is_uc_eligible_young_person
+Boolean claimant_is_below_pension_age
+Boolean claimant_not_in_education_or_exempt
+Boolean claimant_is_resident_in_uk
+Boolean claimant_right_to_reside
+Boolean claimant_is_in_great_britain
+Boolean claimant_is_subject_to_immigration_control
+Boolean claimant_has_accepted_claimant_commitment
+Number age_of_partner
+Boolean partner_is_uc_eligible_young_person
+Boolean partner_is_below_pension_age
+Boolean partner_not_in_education_or_exempt
+Boolean partner_is_resident_in_uk
+Boolean partner_right_to_reside
+Boolean partner_is_in_great_britain
+Boolean partner_is_subject_to_immigration_control
+Boolean partner_has_accepted_partner_commitment
+Money claimant_net_earnings
+Money partner_net_earnings
+Date dob_of_eldest_child
+Integer number_of_children_with_lower_rate
+Integer number_of_children_with_higher_rate
+Boolean claimant_has_limited_capability_for_work_related_activity
+Boolean partner_has_limited_capability_for_work_related_activity
+Integer number_of_carees
+Money childcare_spend
+Housing_type uc_housing_type
+Integer number_of_relevant_family_occupants
+Integer number_of_liable_occupants
+Money local_housing_allowance_for_your_family
+Integer number_of_nondependant_family_occupants
+Money rent
+Integer uc_housing_excess_bedrooms
+
+# Ruleset 1 - When you come under the universal credit system
+# In practice, anyone for whom this is false falls outside of the model
+Boolean comes_under_uc = {
+  (rolled_out_to_full_service == true)
+  and (date_of_claim >= '2018-05-03')
+  and (date_of_claim <= '2019-04-03')
+  and (number_of_children < 3)
+  # Don't include logic for UC Gateway claimants as they're outside of model dates
+}
+
+# Ruleset 2 - Are you eligible for Universal Credit?
+Boolean eligible_for_uc = {
+  (comes_under_uc == true)
+  and (claimant_eligible_for_uc == true)
+  and ((is_couple == false) or (partner_eligible_for_uc == true))
+  and (combined_savings <= £16000)
+  and (uc_entitlement > £0)
+}
+
+Boolean claimant_eligible_for_uc = {
+  ((age_of_claimant >= 18) or (age_of_claimant >= 16 and claimant_is_uc_eligible_young_person == true))
+  and (claimant_is_below_pension_age == true)
+  and (claimant_not_in_education_or_exempt == true)
+  and (claimant_is_resident_in_uk == true and claimant_right_to_reside == true)
+  and (claimant_is_in_great_britain == true)
+  and (claimant_is_subject_to_immigration_control == false)
+  and (claimant_has_accepted_claimant_commitment == true)
+}
+
+Boolean partner_eligible_for_uc = {
+  ((age_of_partner >= 18) or (age_of_partner >= 16 and partner_is_uc_eligible_young_person == true))
+  and (partner_is_below_pension_age == true)
+  and (partner_not_in_education_or_exempt == true)
+  and (partner_is_resident_in_uk == true and partner_right_to_reside == true)
+  and (partner_is_in_great_britain == true)
+  and (partner_is_subject_to_immigration_control == false)
+  and (partner_has_accepted_partner_commitment == true)
+}
+
+# Ruleset 3 - How much Universal Credit do you get?
+Money uc_entitlement = {
+  # Note the use of ~- means this cannot go below £0
+  uc_maximum_amount ~- uc_earnings_taper ~- uc_unearned_income
+}
+
+# Ruleset 4 - How much is your maximum amount of UC?
+Money uc_maximum_amount = {
+  uc_standard_allowance
+  + uc_children_allowance
+  + uc_work_incapability_element
+  + uc_carer_element
+  + uc_childcare_element
+  + uc_housing_costs_element
+}
+
+# Ruleset 5 - What is the earnings taper?
+Money uc_earnings_taper = {
+  (uc_net_earnings ~- uc_work_allowance) * 63% 
+}
+
+Money uc_net_earnings = {
+  claimant_net_earnings + partner_net_earnings
+}
+
+# Ruleset 6 - What is unearned income for UC?
+Money uc_unearned_income
+
+# Ruleset 7 - The standard UC allowance
+Money uc_standard_allowance = {
+  if (is_couple == true)
+  then (if (age_of_claimant < 25 and age_of_partner < 25) then £395.20 else £498.89)
+  else (if age_of_claimant < 25 then £251.77 else £317.82)
+}
+
+# Ruleset 8 - An allowance for children under UC
+Money uc_children_allowance = {
+  if number_of_children == 0
+  then £0
+  else ((
+    (if dob_of_eldest_child < '2017-04-06'
+    then £277.08
+    else £231.67)
+    +
+    (if number_of_children == 2
+    then £231.67
+    else £0)
+  )
+  + (number_of_children_with_lower_rate * £126.11)
+  + (number_of_children_with_higher_rate * £383.86))
+}
+
+# Ruleset 9 - An element for adults with limited capability for work or work-related activity due to illness under UC
+Money uc_work_incapability_element = {
+  if (claimant_has_limited_capability_for_work_related_activity == true
+    or partner_has_limited_capability_for_work_related_activity == true)
+  then £328.32
+  else £0
+}
+
+# Ruleset 10 - A carer element if one of the recipients cares for a severely disabled person under UC
+Money uc_carer_element = {
+  if uc_work_incapability_element > £0
+  then £0
+  else (
+    if number_of_carees >= 1
+    then (
+      £156.45
+      + (
+        if (number_of_carees >= 2 and is_couple == true)
+        then £156.45
+        else £0
+      )
+    )
+    else £0
+  )
+}
+
+# Ruleset 11 - An allowance for childcare under UC
+Money uc_childcare_element = {
+  if is_uc_childcare_eligible
+  then (
+    if number_of_children == 1
+    then min(uc_childcare_proportion, £646.35)
+    else min(uc_childcare_proportion, £1108.04)
+  )
+  else £0
+}
+
+# We assume that all children are under 16
+Boolean is_uc_childcare_eligible = {
+  if number_of_children == 0
+  then false
+  else (
+    if is_couple == true
+    then (
+      if claimant_net_earnings > £0
+      then (
+        if (partner_net_earnings > £0 or partner_has_limited_capability_for_work_related_activity)
+        then true
+        else false
+      )
+      else (
+        if (claimant_has_limited_capability_for_work_related_activity and partner_net_earnings > £0)
+        then true
+        else false
+      )
+    )
+    else (
+      if claimant_net_earnings > £0
+      then true
+      else false
+    )
+  )
+}
+
+Money uc_childcare_proportion = {
+  childcare_spend * 85%
+}
+
+# Ruleset 12 - A housing costs element under UC
+Money uc_housing_costs_element = {
+  if uc_housing_type == Housing_type.none
+  then £0
+  else (
+    if uc_housing_type == Housing_type.private
+    then uc_housing_private_cost
+    else (
+      if uc_housing_type == Housing_type.social
+      then uc_housing_social_cost
+      else uc_housing_owner_occupier_cost
+    )
+  )
+}
+
+Money uc_housing_private_cost = {
+  min(uc_housing_private_core_rent, uc_housing_private_cap_rent) ~- uc_nondependent_deduction
+}
+
+Money uc_housing_private_core_rent = {
+  (rent * number_of_relevant_family_occupants) / number_of_liable_occupants  
+}
+
+Money uc_housing_private_cap_rent = {
+  local_housing_allowance_for_your_family
+}
+
+Money uc_nondependent_deduction = {
+  £72.16 * number_of_nondependant_family_occupants
+}
+
+Money uc_housing_social_cost = {
+  rent ~- uc_housing_bedroom_tax
+}
+
+Money uc_housing_bedroom_tax = {
+  if uc_housing_excess_bedrooms == 0
+  then £0
+  else (
+    if uc_housing_excess_bedrooms == 1
+    then rent * 14%
+    else rent * 25%
+  )
+}
+
+# The qualifying period makes £0 the default value for new claims
+Money uc_housing_owner_occupier_cost = {
+  £0
+}
