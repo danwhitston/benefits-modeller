@@ -1,7 +1,7 @@
 # This is a datatype more than a variable
 Enum Housing_type(none, private, social, owner_occupier)
 
-# We set up variables before invoking them
+# We declare variables before invoking them
 # Some of these can be converted to functions later
 # There are unmodelled dependencies contained in these variables
 # For example, age_of_claimant determines claimant_is_below_pension_age
