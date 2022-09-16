@@ -20,7 +20,7 @@ Since the handbook we're using as a basis for our modelling only applies to a li
 
 There are situations in which someone's eligibility for a benefit is not established until after the point where that benefit should have been paid. Sometimes this results in payment being backdated, i.e. paid at a later point. In other circumstances, the payment may not be made up at a later point. Either way, we're looking to model benefit eligibility rather than the payment of eligible and claimed benefits, which has many rules of its own and relies implicitly on the history of payments made to a claimant.
 
-## Rule 1 - When you come under the universal credit system
+## Ruleset 1 - When you come under the universal credit system
 
 Source: p20-22
 
@@ -39,7 +39,7 @@ As with other rules, there are inputs to this decision which are themselves subj
 * The date at which their Jobcentre area becomes a 'full service' area, which is a date between November 2015 and December 2018
 * Whether a claimant meets the three-or-more-children-based exception criteria for UC rollout.
 
-## Rule 2 - Are you eligible for Universal Credit?
+## Ruleset 2 - Are you eligible for Universal Credit?
 
 Source: p31-33
 
@@ -65,7 +65,7 @@ The financial requirements to claim UC are that claimant(s) do not have:
 
 The income ceiling ('too high an income') is not a fixed number - instead it refers to an income which is high enough that no UC would be paid, due to the reduction in UC payments that results from income. This introduces a dependency between this ruleset and rule 3, the expected amount.
 
-## Rule 3 - How much Universal Credit do you get?
+## Ruleset 3 - How much Universal Credit do you get?
 
 Source: p34-38
 
@@ -75,7 +75,7 @@ Much of the detail on calculation of amounts in this section of the handbook sim
 
 The terms are defined in rules 4, 5 and 6, respectively. There is also a set of rules for something called Transitional Protection, but this only applies after July 2019, so is not a concern for our model. Where relevant, the time period used for any value calculated over time in UC (e.g. rent being paid, childcare cost) is £ per month.
 
-## Rule 4 - How much is your maximum amount of UC?
+## Ruleset 4 - How much is your maximum amount of UC?
 
 Source: p59
 
@@ -88,7 +88,7 @@ The UC maximum amount is the sum of:
 * An allowance for childcare (rule 11)
 * A housing costs element (rule 12)
 
-## Rule 5 - What is the earnings taper?
+## Ruleset 5 - What is the earnings taper?
 
 Source: p36-37
 
@@ -100,19 +100,19 @@ where
 
 `work allowance` is counted if the claimant(s) are responsible for a child or have limited capacity to work. If counted, then the value is £198 if there is a housing costs element (i.e. rule 12 has a greater-than-zero result) or £409 if there is no housing costs element. Otherwise, it's £0.
 
-## Rule 6 - What is unearned income for UC?
+## Ruleset 6 - What is unearned income for UC?
 
 Source: p37
 
 This can include income from a large range of unearned sources, including certain other benefits, income from capital including rental income, and so on. No taper is applied to unearned income, so the full value is counted against the UC maximum amount.
 
-## Rule 7 - The standard UC allowance
+## Ruleset 7 - The standard UC allowance
 
 Source: p59-60
 
 The standard UC allowance is £251.77 for a single claimant aged under 25, £317.82 for a single claimant aged 25 or over, £395.20 for a claiming couple both aged under 25, £498.89 for a claiming couple where at least one person is aged 25 or over.
 
-## Rule 8 - An allowance for children under UC
+## Ruleset 8 - An allowance for children under UC
 
 Source: p60-61
 
@@ -124,7 +124,7 @@ If there is a second qualifying child, the allowance element for them is £231.6
 
 There is a two-child limit for new UC claims, which adds considerable complexity:
 
-* Claimants / couples with more than two qualifying children at time of claim do not come under UC and should claim legacy benefits instead, for new claims starting between 06/04/2017 and 01/02/2019. This requirement is described in Rule 1, and would *normally* mean that new claimants with more than 2 eligible children did not come under UC, and so did not need to be modelled.
+* Claimants / couples with more than two qualifying children at time of claim do not come under UC and should claim legacy benefits instead, for new claims starting between 06/04/2017 and 01/02/2019. This requirement is described in Ruleset 1, and would *normally* mean that new claimants with more than 2 eligible children did not come under UC, and so did not need to be modelled.
 * However, there are several exceptions to the two-child limit for special circumstances such as multiple births (i.e. twins or triplets). It would take more investigation to determine whether these would take effect on claimants that come under UC, or whether any such claims would be diverted to legacy benefits. For example, a claimant with two eligible children claims early in the period under modelling, comes under UC and is successful in their claim, then has another child. Do they remain under UC and hit the two-child limit, or are they switched to legacy benefits?
 * At the time of publication of the handbook, there was also a legal challenge under way against the two-child limit, which would potentially have required backdated eligibility and benefit payment if it had succeeded. It's unclear how this kind of retrospective alteration to eligibility could be modelled.
 
@@ -134,7 +134,7 @@ Separately to the normal child elements, a claimant receives a disabled child ad
 
 The total allowance for children under UC is the sum of the allowance elements.
 
-## Rule 9 - An element for adults with limited capability for work or work-related activity due to illness under UC
+## Ruleset 9 - An element for adults with limited capability for work or work-related activity due to illness under UC
 
 Source: p64-67
 
@@ -147,7 +147,7 @@ Dealing purely with limited capability for work-related activity, if a claimant 
 
 There is complexity to the timing of eligibility - a newly qualifying claimant should only have the award counted from the first assessment period beginning more than three months from the date of first providing medical evidence of a health condition that leads to Work Capability Assessment. So a claimant provides evidence such as a medical certificate from their GP, this triggers the Work Capability Assessment process, and eligibility starts on the first assessment period that begins more than three months after that date. If the WCA process takes longer than that, then payment will be backdated following award.
 
-## Rule 10 - A carer element if one of the recipients cares for a severely disabled person under UC
+## Ruleset 10 - A carer element if one of the recipients cares for a severely disabled person under UC
 
 Source: p67-68
 
@@ -158,7 +158,7 @@ If a claimant or their partner provides unpaid care for someone, for at least 35
 
 The carer element is £156.45 per month (i.e. per assessment period), or twice that if both partners are caring for different people.
 
-## Rule 11 - An allowance for childcare under UC
+## Ruleset 11 - An allowance for childcare under UC
 
 Source: p68-70
 
@@ -171,7 +171,7 @@ If a claimant pays for childcare in order to carry out paid work, then they are 
 
 There are further conditions, but they do not affect the basic rules. There is also a help scheme called tax-free childcare payments, but claiming it removes eligibility for UC.
 
-## Rule 12 - A housing costs element under UC
+## Ruleset 12 - A housing costs element under UC
 
 Source: p72-106
 
