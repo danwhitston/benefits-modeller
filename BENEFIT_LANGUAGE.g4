@@ -37,6 +37,11 @@ expression
   : // TODO
   ;
 
+// Everything from a # to end of line is marked as a comment
+comment
+  : '#' .*? NEWLINE
+  ;
+
 /* 
  * Lexer
  */
@@ -70,7 +75,7 @@ MONEY
   ;
 
 DATE
-  : // TODO
+  : SINGLE_QUOTE YEAR '-' MONTH '-' DAY SINGLE_QUOTE
   ;
 
 INTEGER
@@ -81,6 +86,18 @@ INTEGER
 BOOLEAN
   : 'true'
   | 'false'
+  ;
+
+YEAR
+  : NON_ZERO_DIGIT DIGIT DIGIT DIGIT
+  ;
+
+MONTH
+  : DIGIT DIGIT
+  ;
+
+DAY
+  : DIGIT DIGIT
   ;
 
 // Punctuation and structure
@@ -103,6 +120,10 @@ OPEN_BRACKET
 
 CLOSE_BRACKET
   : ')'
+  ;
+
+NEWLINE
+  : ('\r' | '\n')+
   ;
 
 // Operators - note the precedence order is important here
@@ -165,6 +186,10 @@ MIN // Does this get gazumped by VARIABLE_NAME?
 
 // Fragments
 
+fragment SINGLE_QUOTE
+  : '\''
+  ;
+
 fragment PENCE_VALUE
   : DIGIT DIGIT
   ;
@@ -178,7 +203,7 @@ fragment NON_ZERO_DIGIT
   ;
 
 fragment DIGIT
-  : [0-9]
+  : '0' | NON_ZERO_DIGIT
   ;
 
 fragment CURRENCY_SYMBOL
@@ -199,8 +224,4 @@ fragment LOWER_CASE_LETTER
 
 fragment WHITESPACE
   : (' ')+
-  ;
-
-fragment NEWLINE
-  : ('\r' | '\n')+
   ;
