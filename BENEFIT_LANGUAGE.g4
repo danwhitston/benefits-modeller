@@ -3,7 +3,8 @@ grammar BENEFIT_LANGUAGE;
 /*
  * Parser
  * We do not enforce type consistency in the parser. This is possible to do
- * as there are very few types and operators, but is best left to the 
+ * as there are very few types and operators, but complex validation is best
+ * left to the visitor.
  */
 
 declare_function
@@ -20,7 +21,7 @@ declare_variable
 //   ;
 
 declare_enum_type
-  : 'Enum' ENUM_TYPE_NAME OPEN_BRACKET VARIABLE_NAME (LIST_SEPARATOR VARIABLE_NAME)* CLOSE_BRACKET
+  : 'Enum' ENUM_VARIABLE_NAME OPEN_BRACKET VARIABLE_NAME (LIST_SEPARATOR VARIABLE_NAME)* CLOSE_BRACKET
   ;
 
 minimum
@@ -41,12 +42,20 @@ expression
 
 // Data types
 
-VARIABLE_TYPE
+VARIABLE_TYPE // Excludes Enum as that is defined at time of declaration
   : 'Integer' | 'Money' | 'Percent' | 'Date' | 'Boolean'
   ;
 
 ENUM_REFERENCE
-  : ENUM_TYPE_NAME DECIMAL_POINT VARIABLE_NAME
+  : ENUM_VARIABLE_NAME DECIMAL_POINT VARIABLE_NAME
+  ;
+
+ENUM_VARIABLE_NAME
+  : UPPER_CASE_LETTER (LOWER_CASE_LETTER | UNDERSCORE)*
+  ;
+
+VARIABLE_NAME
+  : (LOWER_CASE_LETTER | UNDERSCORE)+
   ;
 
 // Data representations
@@ -71,14 +80,6 @@ INTEGER
 BOOLEAN
   : 'true'
   | 'false'
-  ;
-
-VARIABLE_NAME
-  : (LOWER_CASE_LETTER | UNDERSCORE)+
-  ;
-
-ENUM_TYPE_NAME
-  : UPPER_CASE_LETTER (LOWER_CASE_LETTER | UNDERSCORE)*
   ;
 
 // Punctuation and structure
