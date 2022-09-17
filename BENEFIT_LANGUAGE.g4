@@ -2,39 +2,89 @@ grammar BENEFIT_LANGUAGE;
 
 /*
  * Parser
+ * We do not enforce type consistency in the parser. This is possible to do
+ * as there are very few types and operators, but is best left to the 
  */
 
 declare_function
   : declare_variable OPEN_CURLY_BRACKET expression CLOSE_CURLY_BRACKET
   ;
 
+// Conflicts with declare_function so must come below it
 declare_variable
   : VARIABLE_TYPE VARIABLE_NAME
   ;
 
 // assign_variable
-//   : VARIABLE_NAME EQUAL_SIGN // THIS NEEDS FINISHING!
+//   : VARIABLE_NAME EQUAL_SIGN // TODO
 //   ;
 
 declare_enum_type
   : 'Enum' ENUM_TYPE_NAME OPEN_BRACKET VARIABLE_NAME (LIST_SEPARATOR VARIABLE_NAME)* CLOSE_BRACKET
   ;
 
+minimum
+  : 'min' OPEN_BRACKET expression LIST_SEPARATOR expression CLOSE_BRACKET
+  ;
+
+if_then_else
+  : 'if' expression 'then' expression 'else' expression
+  ;
+
+expression
+  : // TODO
+  ;
+
 /* 
  * Lexer
  */
 
-LIST_SEPARATOR
-  : ','
+// Data types
+
+VARIABLE_TYPE
+  : 'Integer' | 'Money' | 'Percent' | 'Date' | 'Boolean'
   ;
 
-EQUAL_SIGN
-  : '='
+ENUM_REFERENCE
+  : ENUM_TYPE_NAME DECIMAL_POINT VARIABLE_NAME
+  ;
+
+// Data representations
+
+PERCENT
+  : INTEGER '%'
+  ;
+
+MONEY
+  : CURRENCY_SYMBOL INTEGER (DECIMAL_POINT PENCE_VALUE)?
+  ;
+
+DATE
+  : // TODO
   ;
 
 INTEGER
   : NON_ZERO_DIGIT DIGIT*
   | '0'+
+  ;
+
+BOOLEAN
+  : 'true'
+  | 'false'
+  ;
+
+VARIABLE_NAME
+  : (LOWER_CASE_LETTER | UNDERSCORE)+
+  ;
+
+ENUM_TYPE_NAME
+  : UPPER_CASE_LETTER (LOWER_CASE_LETTER | UNDERSCORE)*
+  ;
+
+// Punctuation and structure
+
+LIST_SEPARATOR
+  : ','
   ;
 
 OPEN_CURLY_BRACKET
@@ -53,26 +103,61 @@ CLOSE_BRACKET
   : ')'
   ;
 
-MONEY
-  : CURRENCY_SYMBOL INTEGER (DECIMAL_POINT PENCE_VALUE)?
+// Operators - note the precedence order is important here
+
+OPERATOR
+  : ASSIGNER | COMPARATOR
   ;
 
-BOOLEAN
-  : 'true'
-  | 'false'
+ASSIGNER
+  : ASSIGN_EQUAL_TO
   ;
 
-VARIABLE_TYPE
-  : 'Integer' | 'Money' | 'Percent' | 'Date' | 'Boolean'
+COMPARATOR
+  : IS_EQUAL_TO | IS_LESS_THAN_OR_EQUAL_TO | IS_LESS_THAN | IS_GREATER_THAN_OR_EQUAL_TO | IS_GREATER_THAN | ADD | BOUNDED_SUBTRACT | MULTIPLY | DIVIDE
   ;
 
-VARIABLE_NAME
-  : (LOWER_CASE_LETTER | UNDERSCORE)+
+IS_EQUAL_TO
+  : '=='
   ;
 
-ENUM_TYPE_NAME
-  : UPPER_CASE_LETTER (LOWER_CASE_LETTER | UNDERSCORE)*
+IS_LESS_THAN_OR_EQUAL_TO
+  : '<='
   ;
+
+IS_LESS_THAN
+  : '<'
+  ;
+
+IS_GREATER_THAN_OR_EQUAL_TO
+  : '>='
+  ;
+
+IS_GREATER_THAN
+  : '>'
+  ;
+
+ASSIGN_EQUAL_TO
+  : '='
+  ;
+
+ADD
+  : '+'
+  ;
+
+BOUNDED_SUBTRACT
+  : '~-'
+  ;
+
+MULTIPLY
+  : '*'
+  ;
+
+DIVIDE
+  : '/'
+  ;
+
+// Fragments
 
 fragment PENCE_VALUE
   : DIGIT DIGIT
