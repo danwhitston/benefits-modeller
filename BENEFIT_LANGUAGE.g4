@@ -34,7 +34,19 @@ if_then_else
   ;
 
 expression
-  : // TODO
+  : (term | bracketed_expression) OPERATOR (term | expression | bracketed_expression)
+  ;
+
+bracketed_expression
+  : OPEN_BRACKET expression CLOSE_BRACKET
+  ;
+
+term
+  : ENUM_REFERENCE | VARIABLE_NAME | value
+  ;
+
+value
+  : PERCENT | MONEY | DATE | INTEGER | BOOLEAN
   ;
 
 // Everything from a # to end of line is marked as a comment
