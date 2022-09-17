@@ -24,9 +24,10 @@ declare_enum_type
   : 'Enum' ENUM_VARIABLE_NAME OPEN_BRACKET VARIABLE_NAME (LIST_SEPARATOR VARIABLE_NAME)* CLOSE_BRACKET
   ;
 
-minimum
-  : 'min' OPEN_BRACKET expression LIST_SEPARATOR expression CLOSE_BRACKET
-  ;
+// We've regularised min syntax to match the other operators, making this obsolete
+// minimum
+//   : 'min' OPEN_BRACKET expression LIST_SEPARATOR expression CLOSE_BRACKET
+//   ;
 
 if_then_else
   : 'if' expression 'then' expression 'else' expression
@@ -156,6 +157,10 @@ MULTIPLY
 
 DIVIDE
   : '/'
+  ;
+
+MIN // Does this get gazumped by VARIABLE_NAME?
+  : 'min'
   ;
 
 // Fragments

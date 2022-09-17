@@ -116,9 +116,11 @@ A noteworthy aspect of the current set of rules is that any expression involving
 
 `a / b` is required for the private tenant calculation in rule 12, and returns the left-hand side divided by the right-hand side.
 
-### Minimum: min()
+### Minimum: min
 
-Rule 11 has an upper bound for the childcare allowance, which can be represented with `min(a, £646.35)` for one child, where `a` is a Money value representing 85% of the childcare cost and £646.35 is the maximum repayment for one child. It can also be thought of as `if (a < b) then a else b`.
+Rule 11 has an upper bound for the childcare allowance, which can be represented with `a min £646.35` for one child, where `a` is a Money value representing 85% of the childcare cost and £646.35 is the maximum repayment for one child. It can also be thought of as `if (a < b) then a else b`.
+
+Note that we're using an unconventional syntax for min by making it behave in the same way as our previous operators, with `min` in between its two expressions rather than placing it before and enclosing a list in brackets like `min(a, £646.35)`. We could go the conventional route - it's been done this way for simplicity - but I'm holding off until or unless we want to compare lists of more than two items.
 
 Supported types include Integer, Money, and potentially Date.
 

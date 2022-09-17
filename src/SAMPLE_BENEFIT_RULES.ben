@@ -167,8 +167,8 @@ Money uc_childcare_element = {
   if is_uc_childcare_eligible
   then (
     if number_of_children == 1
-    then min(uc_childcare_proportion, £646.35)
-    else min(uc_childcare_proportion, £1108.04)
+    then (uc_childcare_proportion min £646.35)
+    else (uc_childcare_proportion min £1108.04)
   )
   else £0
 }
@@ -220,7 +220,7 @@ Money uc_housing_costs_element = {
 }
 
 Money uc_housing_private_cost = {
-  min(uc_housing_private_core_rent, uc_housing_private_cap_rent) ~- uc_nondependent_deduction
+  (uc_housing_private_core_rent min uc_housing_private_cap_rent) ~- uc_nondependent_deduction
 }
 
 Money uc_housing_private_core_rent = {
