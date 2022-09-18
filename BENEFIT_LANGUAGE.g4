@@ -39,23 +39,23 @@ statement
 // BEN statements
 
 declare_function
-  : declare_variable '=' OPEN_CURLY_BRACKET expression CLOSE_CURLY_BRACKET
+  : declare_variable '=' OPEN_CURLY_BRACKET (expression | if_then_else) CLOSE_CURLY_BRACKET
   ;
 
 declare_enum_variable
   : ENUM_VARIABLE_NAME VARIABLE_NAME
   ;
 
-declare_variable // Conflicts with declare_function unless NEWLINE is included
-  : VARIABLE_TYPE VARIABLE_NAME NEWLINE
+declare_variable
+  : VARIABLE_TYPE VARIABLE_NAME
   ;
 
 declare_enum_type
   : 'Enum' ENUM_VARIABLE_NAME OPEN_BRACKET VARIABLE_NAME (LIST_SEPARATOR VARIABLE_NAME)* CLOSE_BRACKET
   ;
 
-bracketed_expression // if then else is either on its own, or in brackets
-  : OPEN_BRACKET (expression | if_then_else) CLOSE_BRACKET
+bracketed_expression
+  : OPEN_BRACKET expression CLOSE_BRACKET
   ;
 
 if_then_else
@@ -63,7 +63,11 @@ if_then_else
   ;
 
 expression
-  : (term | bracketed_expression) COMPARATOR (term | expression | bracketed_expression)
+  : (bracketed_expression | unbracketed_expression | if_then_else | term)
+  ;
+
+unbracketed_expression
+  : (term | bracketed_expression) (COMPARATOR | LOGICAL_OPERATOR) expression
   ;
 
 term
@@ -152,7 +156,11 @@ COMMENT
 // Operators - precedence order is important
 
 COMPARATOR
-  : IS_EQUAL_TO | IS_LESS_THAN_OR_EQUAL_TO | IS_LESS_THAN | IS_GREATER_THAN_OR_EQUAL_TO | IS_GREATER_THAN | ADD | BOUNDED_SUBTRACT | MULTIPLY | DIVIDE
+  : IS_EQUAL_TO | IS_LESS_THAN_OR_EQUAL_TO | IS_LESS_THAN | IS_GREATER_THAN_OR_EQUAL_TO | IS_GREATER_THAN | ADD | BOUNDED_SUBTRACT | MULTIPLY | DIVIDE | MIN
+  ;
+
+LOGICAL_OPERATOR
+  : AND | OR
   ;
 
 IS_EQUAL_TO
@@ -197,6 +205,14 @@ DIVIDE
 
 MIN // This operator goes above VARIABLE_NAME to establish precedence
   : 'min'
+  ;
+
+AND // likewise
+  : 'and'
+  ;
+
+OR // likewise
+  : 'or'
   ;
 
 // Data types
