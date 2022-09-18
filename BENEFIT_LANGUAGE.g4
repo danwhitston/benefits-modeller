@@ -13,16 +13,24 @@ file
   ;
 
 statements
-  : (comment | declare_function | declare_variable | declare_enum_type | NEWLINE)+
+  : statement+
+  ;
+
+statement
+  : (comment | declare_function | declare_variable | declare_enum_type | declare_enum_variable)
   ;
 
 declare_function
-  : declare_variable ASSIGN_EQUAL_TO OPEN_CURLY_BRACKET expression CLOSE_CURLY_BRACKET
+  : declare_variable '=' OPEN_CURLY_BRACKET expression CLOSE_CURLY_BRACKET
   ;
 
-// Conflicts with declare_function so must come below it
+declare_enum_variable
+  : ENUM_VARIABLE_NAME VARIABLE_NAME
+  ;
+
+// Conflicts with declare_function unless the NEWLINE is included
 declare_variable
-  : VARIABLE_TYPE VARIABLE_NAME
+  : VARIABLE_TYPE VARIABLE_NAME NEWLINE
   ;
 
 // assign_variable
@@ -62,24 +70,6 @@ comment
 /* 
  * Lexer
  */
-
-// Data types
-
-VARIABLE_TYPE // Excludes Enum as that is defined at time of declaration
-  : 'Integer' | 'Money' | 'Percent' | 'Date' | 'Boolean'
-  ;
-
-ENUM_REFERENCE
-  : ENUM_VARIABLE_NAME DECIMAL_POINT VARIABLE_NAME
-  ;
-
-ENUM_VARIABLE_NAME
-  : UPPER_CASE_LETTER (LOWER_CASE_LETTER | UNDERSCORE)*
-  ;
-
-VARIABLE_NAME
-  : (LOWER_CASE_LETTER | UNDERSCORE)+
-  ;
 
 // Data representations
 
@@ -137,10 +127,6 @@ OPEN_BRACKET
 
 CLOSE_BRACKET
   : ')'
-  ;
-
-NEWLINE
-  : ('\r' | '\n')+
   ;
 
 COMMENT
@@ -201,8 +187,35 @@ DIVIDE
   : '/'
   ;
 
-MIN // Does this get gazumped by VARIABLE_NAME?
+MIN // This operator goes above VARIABLE_NAME to establish precedence
   : 'min'
+  ;
+
+// Data types
+
+VARIABLE_TYPE // Excludes Enum as that is defined at time of declaration
+  : 'Integer' | 'Money' | 'Percent' | 'Date' | 'Boolean'
+  ;
+
+ENUM_REFERENCE
+  : ENUM_VARIABLE_NAME DECIMAL_POINT VARIABLE_NAME
+  ;
+
+ENUM_VARIABLE_NAME
+  : UPPER_CASE_LETTER (LOWER_CASE_LETTER | UNDERSCORE)*
+  ;
+
+VARIABLE_NAME
+  : (LOWER_CASE_LETTER | UNDERSCORE)+
+  ;
+
+// This potentially skips all
+WHITESPACE
+  : [ \t]+ -> skip
+  ;
+
+NEWLINE
+  : ('\r' | '\n')+ -> skip
   ;
 
 // from https://tomassetti.me/best-practices-for-antlr-parsers/
@@ -248,9 +261,6 @@ fragment LOWER_CASE_LETTER
   : [a-z]
   ;
 
-fragment WHITESPACE
-  : (' ')+
-  ;
 
 fragment HASH_SYMBOL
   : '#'

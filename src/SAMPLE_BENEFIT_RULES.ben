@@ -37,7 +37,7 @@ Boolean claimant_has_limited_capability_for_work_related_activity
 Boolean partner_has_limited_capability_for_work_related_activity
 Integer number_of_carees
 Money childcare_spend
-Housing_type uc_housing_type
+Housing_type uc_housing_type # i.e. uc_housing_type holds an enum from Housing_type
 Integer number_of_relevant_family_occupants
 Integer number_of_liable_occupants
 Money local_housing_allowance_for_your_family
