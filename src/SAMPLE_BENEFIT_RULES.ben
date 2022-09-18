@@ -10,7 +10,7 @@ Date date_of_claim
 Integer number_of_children
 Boolean is_uc_eligible_young_person
 Boolean is_couple
-Number age_of_claimant
+Integer age_of_claimant
 Boolean claimant_is_uc_eligible_young_person
 Boolean claimant_is_below_pension_age
 Boolean claimant_not_in_education_or_exempt
@@ -19,7 +19,7 @@ Boolean claimant_right_to_reside
 Boolean claimant_is_in_great_britain
 Boolean claimant_is_subject_to_immigration_control
 Boolean claimant_has_accepted_claimant_commitment
-Number age_of_partner
+Integer age_of_partner
 Boolean partner_is_uc_eligible_young_person
 Boolean partner_is_below_pension_age
 Boolean partner_not_in_education_or_exempt
