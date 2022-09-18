@@ -47,12 +47,12 @@ Integer uc_housing_excess_bedrooms
 
 # Ruleset 1 - When you come under the universal credit system
 # In practice, anyone for whom this is false falls outside of the model
+# Don't include logic for UC Gateway claimants as they're outside of model dates
 Boolean comes_under_uc = {
   (rolled_out_to_full_service == true)
   and (date_of_claim >= '2018-05-03')
   and (date_of_claim <= '2019-04-03')
   and (number_of_children < 3)
-  # Don't include logic for UC Gateway claimants as they're outside of model dates
 }
 
 # Ruleset 2 - Are you eligible for Universal Credit?
@@ -85,8 +85,8 @@ Boolean partner_eligible_for_uc = {
 }
 
 # Ruleset 3 - How much Universal Credit do you get?
+# Note the use of ~- means this cannot go below £0
 Money uc_entitlement = {
-  # Note the use of ~- means this cannot go below £0
   uc_maximum_amount ~- uc_earnings_taper ~- uc_unearned_income
 }
 

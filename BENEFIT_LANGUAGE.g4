@@ -7,6 +7,7 @@ grammar BENEFIT_LANGUAGE;
  * left to the visitor.
  */
 
+// Top-level structure
 // from https://tomassetti.me/best-practices-for-antlr-parsers/
 file
   : statements EOF
@@ -20,6 +21,23 @@ statement
   : (comment | declare_function | declare_variable | declare_enum_type | declare_enum_variable)
   ;
 
+/*
+ * Test file / solver statements
+ * These are commented out until we have a test file and a way
+ * of handling them, as there's nothing to parse until then
+ * They'll also need fixing before they actually work
+ */
+
+// assign_variable
+//   : VARIABLE_NAME ASSIGN_EQUAL_TO value
+//   ;
+
+// assert_value
+//   : 'assert' VARIABLE_NAME IS_EQUAL_TO value
+//   ;
+
+// BEN statements
+
 declare_function
   : declare_variable '=' OPEN_CURLY_BRACKET expression CLOSE_CURLY_BRACKET
   ;
@@ -28,21 +46,15 @@ declare_enum_variable
   : ENUM_VARIABLE_NAME VARIABLE_NAME
   ;
 
-// Conflicts with declare_function unless the NEWLINE is included
-declare_variable
+declare_variable // Conflicts with declare_function unless NEWLINE is included
   : VARIABLE_TYPE VARIABLE_NAME NEWLINE
   ;
-
-// assign_variable
-//   : VARIABLE_NAME EQUAL_SIGN // TODO
-//   ;
 
 declare_enum_type
   : 'Enum' ENUM_VARIABLE_NAME OPEN_BRACKET VARIABLE_NAME (LIST_SEPARATOR VARIABLE_NAME)* CLOSE_BRACKET
   ;
 
-// if then else is either on its own, or in brackets
-bracketed_expression
+bracketed_expression // if then else is either on its own, or in brackets
   : OPEN_BRACKET (expression | if_then_else) CLOSE_BRACKET
   ;
 
@@ -51,7 +63,7 @@ if_then_else
   ;
 
 expression
-  : (term | bracketed_expression) OPERATOR (term | expression | bracketed_expression)
+  : (term | bracketed_expression) COMPARATOR (term | expression | bracketed_expression)
   ;
 
 term
@@ -63,6 +75,10 @@ value
   ;
 
 // Everything from a # to end of line is marked as a comment
+// Note that this DOES NOT WORK if a comment is placed inside a statement
+// To do that well, we'd need to either manually add comment matches at all
+// points in every statement, or use channels which are not available in
+// combined lexer / parser
 comment
   : COMMENT
   ;
@@ -133,15 +149,7 @@ COMMENT
   : HASH_SYMBOL REST_OF_LINE
   ;
 
-// Operators - note the precedence order is important here
-
-OPERATOR
-  : ASSIGNER | COMPARATOR
-  ;
-
-ASSIGNER
-  : ASSIGN_EQUAL_TO
-  ;
+// Operators - precedence order is important
 
 COMPARATOR
   : IS_EQUAL_TO | IS_LESS_THAN_OR_EQUAL_TO | IS_LESS_THAN | IS_GREATER_THAN_OR_EQUAL_TO | IS_GREATER_THAN | ADD | BOUNDED_SUBTRACT | MULTIPLY | DIVIDE
