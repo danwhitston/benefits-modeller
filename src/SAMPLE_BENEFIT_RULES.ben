@@ -164,7 +164,7 @@ Money uc_carer_element = {
 
 # Ruleset 11 - An allowance for childcare under UC
 Money uc_childcare_element = {
-  if is_uc_childcare_eligible
+  if is_uc_childcare_eligible == true
   then (
     if number_of_children == 1
     then (uc_childcare_proportion min £646.35)
