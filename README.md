@@ -35,11 +35,18 @@ The test cases, expressed in the newly defined language, can be found at [./src/
 
 The parser generator ANTLR 4 was used to generate the language parser.
 
-Lexer file
+The lexer and parser definition is in [./BENEFIT_LANGUAGE.g4](./BENEFIT_LANGUAGE.g4)
 
-Parser file
+To generate a parser from the grammar defined by the two files, run the following:
 
-To generate a parser from the grammar defined by the two files, run `XXXXXX`.
+```sh
+antlr4 -o ./lib/ BENEFIT_LANGUAGE.g4
+javac ./lib/BENEFIT_LANGUAGE*.java
+grun ./lib/BENEFIT_LANGUAGE file -gui
+# Paste SAMPLE_BENEFIT_RULES.ben into the command line
+# Press Ctrl-D
+# Explore the GUI representation of the parse tree
+```
 
 ### 4. Create a runner that takes language code and sample data
 
