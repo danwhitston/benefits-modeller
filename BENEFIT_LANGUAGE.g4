@@ -7,8 +7,17 @@ grammar BENEFIT_LANGUAGE;
  * left to the visitor.
  */
 
+// from https://tomassetti.me/best-practices-for-antlr-parsers/
+file
+  : statements EOF
+  ;
+
+statements
+  : (comment | declare_function | declare_variable | declare_enum_type | NEWLINE)+
+  ;
+
 declare_function
-  : declare_variable OPEN_CURLY_BRACKET expression CLOSE_CURLY_BRACKET
+  : declare_variable ASSIGN_EQUAL_TO OPEN_CURLY_BRACKET expression CLOSE_CURLY_BRACKET
   ;
 
 // Conflicts with declare_function so must come below it
@@ -24,10 +33,10 @@ declare_enum_type
   : 'Enum' ENUM_VARIABLE_NAME OPEN_BRACKET VARIABLE_NAME (LIST_SEPARATOR VARIABLE_NAME)* CLOSE_BRACKET
   ;
 
-// We've regularised min syntax to match the other operators, making this obsolete
-// minimum
-//   : 'min' OPEN_BRACKET expression LIST_SEPARATOR expression CLOSE_BRACKET
-//   ;
+// if then else is either on its own, or in brackets
+bracketed_expression
+  : OPEN_BRACKET (expression | if_then_else) CLOSE_BRACKET
+  ;
 
 if_then_else
   : 'if' expression 'then' expression 'else' expression
@@ -35,10 +44,6 @@ if_then_else
 
 expression
   : (term | bracketed_expression) OPERATOR (term | expression | bracketed_expression)
-  ;
-
-bracketed_expression
-  : OPEN_BRACKET expression CLOSE_BRACKET
   ;
 
 term
@@ -51,7 +56,7 @@ value
 
 // Everything from a # to end of line is marked as a comment
 comment
-  : '#' .*? NEWLINE
+  : COMMENT
   ;
 
 /* 
@@ -138,6 +143,10 @@ NEWLINE
   : ('\r' | '\n')+
   ;
 
+COMMENT
+  : HASH_SYMBOL REST_OF_LINE
+  ;
+
 // Operators - note the precedence order is important here
 
 OPERATOR
@@ -196,6 +205,11 @@ MIN // Does this get gazumped by VARIABLE_NAME?
   : 'min'
   ;
 
+// from https://tomassetti.me/best-practices-for-antlr-parsers/
+ANY
+  : .
+  ;
+
 // Fragments
 
 fragment SINGLE_QUOTE
@@ -236,4 +250,12 @@ fragment LOWER_CASE_LETTER
 
 fragment WHITESPACE
   : (' ')+
+  ;
+
+fragment HASH_SYMBOL
+  : '#'
+  ;
+
+fragment REST_OF_LINE
+  : ANY*? NEWLINE
   ;
