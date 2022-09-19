@@ -27,7 +27,7 @@ The sample test cases can be found at [./SAMPLE_TEST_CASES.md](./SAMPLE_TEST_CAS
 
 The informal language definition can be found at [./LANGUAGE_DERIVATION.md](./LANGUAGE_DERIVATION.md).
 
-The rules, expressed in the newly defined language, can be found at [./src/rules.ben](./src/rules.ben).
+The rules, expressed in the newly defined language, can be found at [./src/SAMPLE_BENEFIT_RULES.ben](./src/SAMPLE_BENEFIT_RULES.ben).
 
 The test cases, expressed in the newly defined language, can be found at [./src/tests.ben](./src/tests.ben).
 
@@ -38,13 +38,13 @@ The parser generator ANTLR 4 was used to generate the language parser.
 
 The lexer and parser definition is in [./BENEFIT_LANGUAGE.g4](./BENEFIT_LANGUAGE.g4)
 
-To generate a parser from the grammar defined by the two files, run the following:
-
-```sh
-
-```
+The Antlr-produced lexer, parser and base listener are in [./lib/](./lib/).
 
 ### 4. Create a runner that takes language code and sample data
+
+The runner script is at [./src/ben_to_smtlib.py](./src/ben_to_smtlib.py).
+
+Usage is like `python3 ben_to_smtlib.py SAMPLE_BENEFIT_RULES.ben`.
 
 ## Installation
 
@@ -58,6 +58,12 @@ For ease of development, the Antlr grammar was converted into a parser in Python
 
 ```sh
 pip install antlr4-python3-runtime
+```
+
+To run the Python script that uses the parser to translate code into SMT-LIB2, you'll need to install Z3 which is used as the provider of SMT-LIB2 solving:
+
+```sh
+pip install z3-solver
 ```
 
 ## Usage
@@ -83,9 +89,18 @@ To recompile the grammar into a Python parser, use:
 antlr4 -o ./lib/ -Dlanguage=Python3 BENEFIT_LANGUAGE.g4
 ```
 
-### Parsing BEN code
+### Parsing BEN code and solving it in SMT-LIB2
 
 BEN is the name of the Domain Specific Language that's been developed to represent benefit logic in this project. By parsing a BEN file with the grammar, we can determine if the basic structure meets the requirements of a BEN program. Once that's been done we can tie our own code in using the Listener pattern to traverse the created structure and convert each element into SMT-LIB2.
+
+Both of these tasks are accomplished by running a single script, as follows:
+
+```sh
+cd src
+python3 ben_to_smtlib.py SAMPLE_BENEFIT_RULES.ben
+```
+
+This assumes that both antlr4 and z3_solver are installed and accessible from the Python path.
 
 ## Contributing
 

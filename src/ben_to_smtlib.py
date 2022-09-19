@@ -1,12 +1,14 @@
 # Based on https://github.com/antlr/antlr4/blob/4.6/doc/python-target.md
 import sys
 from pathlib import Path
+from z3 import *
 
 # Add lib to system path so we can import the generated files
 # They're kept in a separate directory to prevent mixing of generated
-# and written code
+# and written code. This path setting fails if the execution
+# directory is different from the script location in src
 lib_path = Path("../lib/")
-sys.path.append(str(lib_path))
+sys.path.append(str(lib_path)) # TODO: replace this with __init__.py ?
 from antlr4 import *
 from BENEFIT_LANGUAGELexer import BENEFIT_LANGUAGELexer
 from BENEFIT_LANGUAGEParser import BENEFIT_LANGUAGEParser
@@ -31,10 +33,13 @@ def main(argv):
 class SmtLibConverter(BENEFIT_LANGUAGEListener):
     # Enter a parse tree produced by BENEFIT_LANGUAGEParser#file.
     def enterFile(self, ctx: BENEFIT_LANGUAGEParser.FileContext):
+        # SMT-LIB 2 normally requires set-logic <symbol>, but Z3
+        # automatically tries to determine the best to use
         pass
 
     # Exit a parse tree produced by BENEFIT_LANGUAGEParser#file.
     def exitFile(self, ctx: BENEFIT_LANGUAGEParser.FileContext):
+        # Z3 also doesn't appear to need an exit statement
         pass
 
     # Enter a parse tree produced by BENEFIT_LANGUAGEParser#statements.
@@ -135,7 +140,7 @@ class SmtLibConverter(BENEFIT_LANGUAGEListener):
 
     # Enter a parse tree produced by BENEFIT_LANGUAGEParser#comment.
     def enterComment(self, ctx: BENEFIT_LANGUAGEParser.CommentContext):
-        print(ctx.getText)
+        print(ctx.COMMENT())
 
     # Exit a parse tree produced by BENEFIT_LANGUAGEParser#comment.
     def exitComment(self, ctx: BENEFIT_LANGUAGEParser.CommentContext):
