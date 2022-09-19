@@ -8,7 +8,7 @@ from z3 import *
 # and written code. This path setting fails if the execution
 # directory is different from the script location in src
 lib_path = Path("../lib/")
-sys.path.append(str(lib_path)) # TODO: replace this with __init__.py ?
+sys.path.append(str(lib_path))  # TODO: replace this with __init__.py ?
 from antlr4 import *
 from BENEFIT_LANGUAGELexer import BENEFIT_LANGUAGELexer
 from BENEFIT_LANGUAGEParser import BENEFIT_LANGUAGEParser

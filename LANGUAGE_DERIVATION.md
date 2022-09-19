@@ -2,13 +2,50 @@
 
 Now that we have a set of sample benefit rules, we can identify the types of relation and operator that we need to represent the rules.
 
-## Relations
+## Structure and flow
 
 The benefit rules as described are a set of statements relating outputs (a claimant or couple's benefit entitlement) to inputs (their household circumstances, employment etc). While the rules described the results as deriving from the inputs, part of the point of the model is to take a combination of known and unknown inputs and results and use the relations to find the missing values throughout the model.
 
 Taking a bottom-up approach, we can identify the individual pieces of data and logical operators required to capture the sample benefit rules. This plus some function definitions, and program flow methods, should be enough to model the sample benefit rules.
 
 The test cases rely on (i) setting known values, which could be inputs or outputs, and (ii) asserting that one or more unknown values can be inferred from those that are known.
+
+### Statements
+
+In a set of rules that define benefit conditions, we have the following kinds of statement:
+
+* Comment - annotate the rules defined in code. No impact on modelling, but useful for documentation.
+* Function creation - declare a rule that a variable is equal to some expression. This is the basic unit for defining each rule that governs how characteristics of a household relate to each other. For example, `Money uc_housing_private_core_rent = { (rent * number_of_relevant_family_occupants) / number_of_liable_occupants }`.
+* Declaration - define a variable for use in the the expressions that make up the set of assignments. By declaring them in advance, we have explicit knowledge of their type, or `sort` as it's known in SMT-LIB2.
+
+Enums have slightly different grammar and an additional declaration step compared with other datatypes. It's necessary to first define the set of values within a named enum, then declare a variable that takes a value from the enum now that it's been defined.
+
+To test or interact with a model derived from a set of benefit rules, we need two further types of statement:
+
+* Assignment of explicit value to variables - match the variables to a household's situation.
+* Assertion of an 'unknown' variable's value - use an SMT solver to confirm that the known variables, when applied to the rules given, can be used to confirm the value of the 'unknown' variable.
+
+The SMT solver can be used to assert both 'satisfiability', i.e. that it is possible for the known values and the proposed value to be correct while following the defined rules, and 'validity', i.e. that the known values must result in the asserted value while following the defined rules. Roughly speaking, these equate to 'a' solution and 'the' solution. Obviously, 'the' solution is more useful; 'a' solution can be derived without setting any explicit values to other variables, but it won't tell us much.
+
+### Whitespace and newlines
+
+For the ANTLR4 lexer and parser I'm using, a common approach is to skip all whitespace and newlines. This removes these elements from consideration, while still preventing tokenisation from taking place across text that is separated by either. Regardless, the sample benefit rules are keeping to roughly one expression per line, give or take occasional one-line bracketed expressions. The end of each statement is also followed by a newline, for readability and ease of structuring, but style is not enforced...
+
+### Comments
+
+...except with comments! The language uses a `#` symbol to indicate the start of a comment, and the rest of the line until a newline is taken verbatim as the content of the comment, and none of it is matched to other code constructs.
+
+Per <https://github.com/CatalaLang/catala#concepts>, the Catala DSL as a literate programming language extends commenting into a full annotation system that places the code implementation of each law in the context of an overall document structure and textual explanation of the rules that the code is designed to represent. That isn't part of the current design of the language, but tokenisation of comments is at least a step in the right direction, since it enables inclusion of comments into derived models. This could potentially, in future, form the basis of a textual explanation for proofs derived from the model.
+
+However, tokenisation also requires that comments be explicitly recognised and assigned within each place in the code structure that they can appear. It's possible to direct comment tokens to a different channel with a lexer-only ANTLR4 configuration, thus letting them be used anywhere in a code file. Since the grammar as written is a combined lexer and parser, this option is not available. Rather than adding comment as a recognised token between every pair of elements, they've been relegated to only being recognised as complete statements, meaning they can be used before or after a full statement but not in the middle of one.
+
+### List separator
+
+### Expression
+
+### Bracketed expression
+
+### Curly bracketed expression
 
 ## Datatypes
 
@@ -80,7 +117,20 @@ The wider benefit system models eligibility for an arbitrary number of household
 
 ## Operators
 
+### Assignment: =
+
+There are two ways that assignment is used in the model being developed:
+
+* `Money some_money = { money_a + money_b }` - assigning a variable to be equal to the value of an expression, essentially creating a function. In SMT-LIB2 this would be thought of more as asserting a condition on the model, since 'solving' the model is about trying to satisfy all the assertions. The code in every case is being written as Datatype variable_name = { expression }, complete with curly brackets.
+* `some_variable = value` - assigning a value to one of the predefined variables. This is only used in the actual operation of models, to match the model to a test case or real world situation in order that an SMT solver can be used to derive the unknown values from the known ones, check satisfiability, or otherwise prove or disprove an assertion. So it should not be seen in the model code.
+
+We could in theory define constants in the rules instead of directly including values in the rules base, and avoiding magic numbers is good practice generally. But for now, the rules use a deliberately limited subset of what's possible.
+
 ### Equality: ==
+
+Equality with two equals signs is a comparator operator, which returns true if the expressions on either side are equal, or false if they are not. As with other comparators, the expressions have predefined datatypes which must also be equal.
+
+As a side note, I haven't followed the common shorthand of shortening the Boolean comparison `is_this_happening == true` to `is_this_happening` in my sample rules. There's no inherent reason why this shouldn't be supported though; an expression consisting of just a Boolean variable would pass through the value of that variable, which would be true or false.
 
 ### Less-than and greater-than: < and >
 
