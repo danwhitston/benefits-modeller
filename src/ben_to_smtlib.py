@@ -3,6 +3,8 @@ import sys
 from pathlib import Path
 from z3 import *
 
+import pdb
+
 # Add lib to system path so we can import the generated files
 # They're kept in a separate directory to prevent mixing of generated
 # and written code. This path setting fails if the execution
@@ -13,6 +15,8 @@ from antlr4 import *
 from BENEFIT_LANGUAGELexer import BENEFIT_LANGUAGELexer
 from BENEFIT_LANGUAGEParser import BENEFIT_LANGUAGEParser
 from BENEFIT_LANGUAGEListener import BENEFIT_LANGUAGEListener
+
+s = Solver()
 
 
 def main(argv):
@@ -40,7 +44,7 @@ class SmtLibConverter(BENEFIT_LANGUAGEListener):
     # Exit a parse tree produced by BENEFIT_LANGUAGEParser#file.
     def exitFile(self, ctx: BENEFIT_LANGUAGEParser.FileContext):
         # Z3 also doesn't appear to need an exit statement
-        pass
+        print(s.check())
 
     # Enter a parse tree produced by BENEFIT_LANGUAGEParser#statements.
     def enterStatements(self, ctx: BENEFIT_LANGUAGEParser.StatementsContext):
@@ -52,6 +56,8 @@ class SmtLibConverter(BENEFIT_LANGUAGEListener):
 
     # Enter a parse tree produced by BENEFIT_LANGUAGEParser#statement.
     def enterStatement(self, ctx: BENEFIT_LANGUAGEParser.StatementContext):
+        ctx.getChild(0)
+        pdb.set_trace()
         pass
 
     # Exit a parse tree produced by BENEFIT_LANGUAGEParser#statement.

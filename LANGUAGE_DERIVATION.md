@@ -6,9 +6,7 @@ Now that we have a set of sample benefit rules, we can identify the types of rel
 
 The benefit rules as described are a set of statements relating outputs (a claimant or couple's benefit entitlement) to inputs (their household circumstances, employment etc). While the rules described the results as deriving from the inputs, part of the point of the model is to take a combination of known and unknown inputs and results and use the relations to find the missing values throughout the model.
 
-Taking a bottom-up approach, we can identify the individual pieces of data and logical operators required to capture the sample benefit rules. This plus some function definitions, and program flow methods, should be enough to model the sample benefit rules.
-
-The test cases rely on (i) setting known values, which could be inputs or outputs, and (ii) asserting that one or more unknown values can be inferred from those that are known.
+Taking a bottom-up approach, we can identify the individual pieces of data and logical operators required to capture the sample benefit rules, and to work with them in the context of an SMT solver. This plus some function definitions, and program flow methods, should be enough to model the sample benefit rules.
 
 ### Statements
 
