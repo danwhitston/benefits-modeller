@@ -86,7 +86,7 @@ grun ./lib/BENEFIT_LANGUAGE file -gui
 To recompile the grammar into a Python parser, use:
 
 ```sh
-antlr4 -o ./lib/ -Dlanguage=Python3 BENEFIT_LANGUAGE.g4
+antlr4 -o ./lib/ -Dlanguage=Python3 -visitor -no-listener BENEFIT_LANGUAGE.g4
 ```
 
 ### Parsing BEN code and solving it in SMT-LIB2

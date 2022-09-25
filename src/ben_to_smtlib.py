@@ -14,7 +14,7 @@ sys.path.append(str(lib_path))  # TODO: replace this with __init__.py ?
 from antlr4 import *
 from BENEFIT_LANGUAGELexer import BENEFIT_LANGUAGELexer
 from BENEFIT_LANGUAGEParser import BENEFIT_LANGUAGEParser
-from BENEFIT_LANGUAGEListener import BENEFIT_LANGUAGEListener
+from BENEFIT_LANGUAGEVisitor import BENEFIT_LANGUAGEVisitor
 
 s = Solver()
 
@@ -30,127 +30,68 @@ def main(argv):
     parser = BENEFIT_LANGUAGEParser(stream)
     tree = parser.file_()
     smt_lib_converter = SmtLibConverter()
-    walker = ParseTreeWalker()
-    walker.walk(smt_lib_converter, tree)
+    output = smt_lib_converter.visit(tree)
+    print(output)
 
 
-class SmtLibConverter(BENEFIT_LANGUAGEListener):
-    # Enter a parse tree produced by BENEFIT_LANGUAGEParser#file.
-    def enterFile(self, ctx: BENEFIT_LANGUAGEParser.FileContext):
-        # SMT-LIB 2 normally requires set-logic <symbol>, but Z3
-        # automatically tries to determine the best to use
-        pass
+class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
+    # Visit a parse tree produced by BENEFIT_LANGUAGEParser#file.
+    def visitFile(self, ctx: BENEFIT_LANGUAGEParser.FileContext):
+        print("Begun solver setup")
+        return self.visitChildren(ctx)
 
-    # Exit a parse tree produced by BENEFIT_LANGUAGEParser#file.
-    def exitFile(self, ctx: BENEFIT_LANGUAGEParser.FileContext):
-        # Z3 also doesn't appear to need an exit statement
-        print(s.check())
+    # Visit a parse tree produced by BENEFIT_LANGUAGEParser#statements.
+    def visitStatements(self, ctx: BENEFIT_LANGUAGEParser.StatementsContext):
+        return self.visitChildren(ctx)
 
-    # Enter a parse tree produced by BENEFIT_LANGUAGEParser#statements.
-    def enterStatements(self, ctx: BENEFIT_LANGUAGEParser.StatementsContext):
-        pass
+    # Visit a parse tree produced by BENEFIT_LANGUAGEParser#statement.
+    def visitStatement(self, ctx: BENEFIT_LANGUAGEParser.StatementContext):
+        return self.visitChildren(ctx)
 
-    # Exit a parse tree produced by BENEFIT_LANGUAGEParser#statements.
-    def exitStatements(self, ctx: BENEFIT_LANGUAGEParser.StatementsContext):
-        pass
+    # Visit a parse tree produced by BENEFIT_LANGUAGEParser#declare_function.
+    def visitDeclare_function(self, ctx: BENEFIT_LANGUAGEParser.Declare_functionContext):
+        return self.visitChildren(ctx)
 
-    # Enter a parse tree produced by BENEFIT_LANGUAGEParser#statement.
-    def enterStatement(self, ctx: BENEFIT_LANGUAGEParser.StatementContext):
-        ctx.getChild(0)
-        pdb.set_trace()
-        pass
+    # Visit a parse tree produced by BENEFIT_LANGUAGEParser#declare_enum_variable.
+    def visitDeclare_enum_variable(self, ctx: BENEFIT_LANGUAGEParser.Declare_enum_variableContext):
+        return self.visitChildren(ctx)
 
-    # Exit a parse tree produced by BENEFIT_LANGUAGEParser#statement.
-    def exitStatement(self, ctx: BENEFIT_LANGUAGEParser.StatementContext):
-        pass
+    # Visit a parse tree produced by BENEFIT_LANGUAGEParser#declare_variable.
+    def visitDeclare_variable(self, ctx: BENEFIT_LANGUAGEParser.Declare_variableContext):
+        return self.visitChildren(ctx)
 
-    # Enter a parse tree produced by BENEFIT_LANGUAGEParser#declare_function.
-    def enterDeclare_function(self, ctx: BENEFIT_LANGUAGEParser.Declare_functionContext):
-        pass
+    # Visit a parse tree produced by BENEFIT_LANGUAGEParser#declare_enum_type.
+    def visitDeclare_enum_type(self, ctx: BENEFIT_LANGUAGEParser.Declare_enum_typeContext):
+        return self.visitChildren(ctx)
 
-    # Exit a parse tree produced by BENEFIT_LANGUAGEParser#declare_function.
-    def exitDeclare_function(self, ctx: BENEFIT_LANGUAGEParser.Declare_functionContext):
-        pass
+    # Visit a parse tree produced by BENEFIT_LANGUAGEParser#bracketed_expression.
+    def visitBracketed_expression(self, ctx: BENEFIT_LANGUAGEParser.Bracketed_expressionContext):
+        return self.visitChildren(ctx)
 
-    # Enter a parse tree produced by BENEFIT_LANGUAGEParser#declare_enum_variable.
-    def enterDeclare_enum_variable(self, ctx: BENEFIT_LANGUAGEParser.Declare_enum_variableContext):
-        pass
+    # Visit a parse tree produced by BENEFIT_LANGUAGEParser#if_then_else.
+    def visitIf_then_else(self, ctx: BENEFIT_LANGUAGEParser.If_then_elseContext):
+        # In the current definition, if, then, else are elements 0, 2, 4
+        return If(self.visit(ctx.children[1]), self.visit(ctx.children[3]), self.visit(ctx.children[5]))
 
-    # Exit a parse tree produced by BENEFIT_LANGUAGEParser#declare_enum_variable.
-    def exitDeclare_enum_variable(self, ctx: BENEFIT_LANGUAGEParser.Declare_enum_variableContext):
-        pass
+    # Visit a parse tree produced by BENEFIT_LANGUAGEParser#expression.
+    def visitExpression(self, ctx: BENEFIT_LANGUAGEParser.ExpressionContext):
+        return self.visitChildren(ctx)
 
-    # Enter a parse tree produced by BENEFIT_LANGUAGEParser#declare_variable.
-    def enterDeclare_variable(self, ctx: BENEFIT_LANGUAGEParser.Declare_variableContext):
-        pass
+    # Visit a parse tree produced by BENEFIT_LANGUAGEParser#unbracketed_expression.
+    def visitUnbracketed_expression(self, ctx: BENEFIT_LANGUAGEParser.Unbracketed_expressionContext):
+        return self.visitChildren(ctx)
 
-    # Exit a parse tree produced by BENEFIT_LANGUAGEParser#declare_variable.
-    def exitDeclare_variable(self, ctx: BENEFIT_LANGUAGEParser.Declare_variableContext):
-        pass
+    # Visit a parse tree produced by BENEFIT_LANGUAGEParser#term.
+    def visitTerm(self, ctx: BENEFIT_LANGUAGEParser.TermContext):
+        return self.visitChildren(ctx)
 
-    # Enter a parse tree produced by BENEFIT_LANGUAGEParser#declare_enum_type.
-    def enterDeclare_enum_type(self, ctx: BENEFIT_LANGUAGEParser.Declare_enum_typeContext):
-        pass
+    # Visit a parse tree produced by BENEFIT_LANGUAGEParser#value.
+    def visitValue(self, ctx: BENEFIT_LANGUAGEParser.ValueContext):
+        return self.visitChildren(ctx)
 
-    # Exit a parse tree produced by BENEFIT_LANGUAGEParser#declare_enum_type.
-    def exitDeclare_enum_type(self, ctx: BENEFIT_LANGUAGEParser.Declare_enum_typeContext):
-        pass
-
-    # Enter a parse tree produced by BENEFIT_LANGUAGEParser#bracketed_expression.
-    def enterBracketed_expression(self, ctx: BENEFIT_LANGUAGEParser.Bracketed_expressionContext):
-        pass
-
-    # Exit a parse tree produced by BENEFIT_LANGUAGEParser#bracketed_expression.
-    def exitBracketed_expression(self, ctx: BENEFIT_LANGUAGEParser.Bracketed_expressionContext):
-        pass
-
-    # Enter a parse tree produced by BENEFIT_LANGUAGEParser#if_then_else.
-    def enterIf_then_else(self, ctx: BENEFIT_LANGUAGEParser.If_then_elseContext):
-        pass
-
-    # Exit a parse tree produced by BENEFIT_LANGUAGEParser#if_then_else.
-    def exitIf_then_else(self, ctx: BENEFIT_LANGUAGEParser.If_then_elseContext):
-        pass
-
-    # Enter a parse tree produced by BENEFIT_LANGUAGEParser#expression.
-    def enterExpression(self, ctx: BENEFIT_LANGUAGEParser.ExpressionContext):
-        pass
-
-    # Exit a parse tree produced by BENEFIT_LANGUAGEParser#expression.
-    def exitExpression(self, ctx: BENEFIT_LANGUAGEParser.ExpressionContext):
-        pass
-
-    # Enter a parse tree produced by BENEFIT_LANGUAGEParser#unbracketed_expression.
-    def enterUnbracketed_expression(self, ctx: BENEFIT_LANGUAGEParser.Unbracketed_expressionContext):
-        pass
-
-    # Exit a parse tree produced by BENEFIT_LANGUAGEParser#unbracketed_expression.
-    def exitUnbracketed_expression(self, ctx: BENEFIT_LANGUAGEParser.Unbracketed_expressionContext):
-        pass
-
-    # Enter a parse tree produced by BENEFIT_LANGUAGEParser#term.
-    def enterTerm(self, ctx: BENEFIT_LANGUAGEParser.TermContext):
-        pass
-
-    # Exit a parse tree produced by BENEFIT_LANGUAGEParser#term.
-    def exitTerm(self, ctx: BENEFIT_LANGUAGEParser.TermContext):
-        pass
-
-    # Enter a parse tree produced by BENEFIT_LANGUAGEParser#value.
-    def enterValue(self, ctx: BENEFIT_LANGUAGEParser.ValueContext):
-        pass
-
-    # Exit a parse tree produced by BENEFIT_LANGUAGEParser#value.
-    def exitValue(self, ctx: BENEFIT_LANGUAGEParser.ValueContext):
-        pass
-
-    # Enter a parse tree produced by BENEFIT_LANGUAGEParser#comment.
-    def enterComment(self, ctx: BENEFIT_LANGUAGEParser.CommentContext):
-        print(ctx.COMMENT())
-
-    # Exit a parse tree produced by BENEFIT_LANGUAGEParser#comment.
-    def exitComment(self, ctx: BENEFIT_LANGUAGEParser.CommentContext):
-        pass
+    # Visit a parse tree produced by BENEFIT_LANGUAGEParser#comment.
+    def visitComment(self, ctx: BENEFIT_LANGUAGEParser.CommentContext):
+        return self.visitChildren(ctx)
 
 
 if __name__ == '__main__':

@@ -162,13 +162,11 @@ class BENEFIT_LANGUAGEParser ( Parser ):
         def getRuleIndex(self):
             return BENEFIT_LANGUAGEParser.RULE_file
 
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterFile" ):
-                listener.enterFile(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitFile" ):
-                listener.exitFile(self)
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitFile" ):
+                return visitor.visitFile(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -209,13 +207,11 @@ class BENEFIT_LANGUAGEParser ( Parser ):
         def getRuleIndex(self):
             return BENEFIT_LANGUAGEParser.RULE_statements
 
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterStatements" ):
-                listener.enterStatements(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitStatements" ):
-                listener.exitStatements(self)
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitStatements" ):
+                return visitor.visitStatements(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -278,13 +274,11 @@ class BENEFIT_LANGUAGEParser ( Parser ):
         def getRuleIndex(self):
             return BENEFIT_LANGUAGEParser.RULE_statement
 
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterStatement" ):
-                listener.enterStatement(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitStatement" ):
-                listener.exitStatement(self)
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitStatement" ):
+                return visitor.visitStatement(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -364,13 +358,11 @@ class BENEFIT_LANGUAGEParser ( Parser ):
         def getRuleIndex(self):
             return BENEFIT_LANGUAGEParser.RULE_declare_function
 
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterDeclare_function" ):
-                listener.enterDeclare_function(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitDeclare_function" ):
-                listener.exitDeclare_function(self)
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitDeclare_function" ):
+                return visitor.visitDeclare_function(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -428,13 +420,11 @@ class BENEFIT_LANGUAGEParser ( Parser ):
         def getRuleIndex(self):
             return BENEFIT_LANGUAGEParser.RULE_declare_enum_variable
 
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterDeclare_enum_variable" ):
-                listener.enterDeclare_enum_variable(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitDeclare_enum_variable" ):
-                listener.exitDeclare_enum_variable(self)
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitDeclare_enum_variable" ):
+                return visitor.visitDeclare_enum_variable(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -474,13 +464,11 @@ class BENEFIT_LANGUAGEParser ( Parser ):
         def getRuleIndex(self):
             return BENEFIT_LANGUAGEParser.RULE_declare_variable
 
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterDeclare_variable" ):
-                listener.enterDeclare_variable(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitDeclare_variable" ):
-                listener.exitDeclare_variable(self)
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitDeclare_variable" ):
+                return visitor.visitDeclare_variable(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -535,13 +523,11 @@ class BENEFIT_LANGUAGEParser ( Parser ):
         def getRuleIndex(self):
             return BENEFIT_LANGUAGEParser.RULE_declare_enum_type
 
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterDeclare_enum_type" ):
-                listener.enterDeclare_enum_type(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitDeclare_enum_type" ):
-                listener.exitDeclare_enum_type(self)
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitDeclare_enum_type" ):
+                return visitor.visitDeclare_enum_type(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -604,13 +590,11 @@ class BENEFIT_LANGUAGEParser ( Parser ):
         def getRuleIndex(self):
             return BENEFIT_LANGUAGEParser.RULE_bracketed_expression
 
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterBracketed_expression" ):
-                listener.enterBracketed_expression(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitBracketed_expression" ):
-                listener.exitBracketed_expression(self)
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitBracketed_expression" ):
+                return visitor.visitBracketed_expression(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -653,13 +637,11 @@ class BENEFIT_LANGUAGEParser ( Parser ):
         def getRuleIndex(self):
             return BENEFIT_LANGUAGEParser.RULE_if_then_else
 
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterIf_then_else" ):
-                listener.enterIf_then_else(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitIf_then_else" ):
-                listener.exitIf_then_else(self)
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitIf_then_else" ):
+                return visitor.visitIf_then_else(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -717,13 +699,11 @@ class BENEFIT_LANGUAGEParser ( Parser ):
         def getRuleIndex(self):
             return BENEFIT_LANGUAGEParser.RULE_expression
 
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterExpression" ):
-                listener.enterExpression(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitExpression" ):
-                listener.exitExpression(self)
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitExpression" ):
+                return visitor.visitExpression(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -795,13 +775,11 @@ class BENEFIT_LANGUAGEParser ( Parser ):
         def getRuleIndex(self):
             return BENEFIT_LANGUAGEParser.RULE_unbracketed_expression
 
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterUnbracketed_expression" ):
-                listener.enterUnbracketed_expression(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitUnbracketed_expression" ):
-                listener.exitUnbracketed_expression(self)
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitUnbracketed_expression" ):
+                return visitor.visitUnbracketed_expression(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -865,13 +843,11 @@ class BENEFIT_LANGUAGEParser ( Parser ):
         def getRuleIndex(self):
             return BENEFIT_LANGUAGEParser.RULE_term
 
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterTerm" ):
-                listener.enterTerm(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitTerm" ):
-                listener.exitTerm(self)
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitTerm" ):
+                return visitor.visitTerm(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -936,13 +912,11 @@ class BENEFIT_LANGUAGEParser ( Parser ):
         def getRuleIndex(self):
             return BENEFIT_LANGUAGEParser.RULE_value
 
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterValue" ):
-                listener.enterValue(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitValue" ):
-                listener.exitValue(self)
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitValue" ):
+                return visitor.visitValue(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
@@ -983,13 +957,11 @@ class BENEFIT_LANGUAGEParser ( Parser ):
         def getRuleIndex(self):
             return BENEFIT_LANGUAGEParser.RULE_comment
 
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterComment" ):
-                listener.enterComment(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitComment" ):
-                listener.exitComment(self)
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitComment" ):
+                return visitor.visitComment(self)
+            else:
+                return visitor.visitChildren(self)
 
 
 
