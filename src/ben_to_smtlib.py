@@ -58,16 +58,14 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#statement.
     def visitStatement(self, ctx: BENEFIT_LANGUAGEParser.StatementContext):
-        # pdb.set_trace()
         return self.visitChildren(ctx)
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#declare_function.
     def visitDeclare_function(self, ctx: BENEFIT_LANGUAGEParser.Declare_functionContext):
+        global s
         declared_var = self.visit(ctx.getChild(0))
         inside_brackets = self.visit(ctx.getChild(3))
-        # pdb.set_trace()
-        # TODO Declare the two things equivalent
-        # return self.visitChildren(ctx)
+        s.add(declared_var == inside_brackets)
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#declare_enum_variable.
     def visitDeclare_enum_variable(self, ctx: BENEFIT_LANGUAGEParser.Declare_enum_variableContext):
@@ -116,15 +114,17 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
             solver_objects[enum_name].declare(ctx.children[(x * 2) + 3].getText())
         solver_objects[enum_name] = solver_objects[enum_name].create()
         # We don't return anything!
-        # return self.visitChildren(ctx)
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#bracketed_expression.
     def visitBracketed_expression(self, ctx: BENEFIT_LANGUAGEParser.Bracketed_expressionContext):
+        # No need to do anything here
+        # All possibilities are themselves stops in the tree visitor
         return self.visitChildren(ctx)
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#if_then_else.
     def visitIf_then_else(self, ctx: BENEFIT_LANGUAGEParser.If_then_elseContext):
         if_value = self.visit(ctx.children[1])
+        # Temporary pickup of errors before they happen
         if not isinstance(if_value, (bool)):
             pdb.set_trace()
         # In the current definition, if, then, else are elements 0, 2, 4
@@ -132,10 +132,52 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#expression.
     def visitExpression(self, ctx: BENEFIT_LANGUAGEParser.ExpressionContext):
+        # No need to do anything here
+        # All possibilities are themselves stops in the tree visitor
         return self.visitChildren(ctx)
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#unbracketed_expression.
     def visitUnbracketed_expression(self, ctx: BENEFIT_LANGUAGEParser.Unbracketed_expressionContext):
+        # TODO: This is the big one! Get three elements, return two terms w/ operator
+        left = self.visit(ctx.children[0])
+        right = self.visit(ctx.children[2])
+        # THE BIG ONE!
+        if ctx.COMPARATOR() is not None:
+            pdb.set_trace()
+            # TODO: Deal with IS_EQUAL_TO | IS_LESS_THAN_OR_EQUAL_TO | IS_LESS_THAN | IS_GREATER_THAN_OR_EQUAL_TO | IS_GREATER_THAN | ADD | BOUNDED_SUBTRACT | MULTIPLY | DIVIDE | MIN
+            op_text = ctx.COMPARATOR().getText()
+            if op_text == "==":
+                return left == right
+            elif op_text == "<=":
+                return left <= right
+            elif op_text == "<":
+                return left < right
+            elif op_text == ">=":
+                return left >= right
+            elif op_text == ">":
+                return left > right
+            elif op_text == "+":
+                return left + right
+            elif op_text == "~-":
+                # TODO: Implement bounded subtract
+                pdb.set_trace()
+                return left + right
+            elif op_text == "*":
+                return left * right
+            elif op_text == "/":
+                # DOES THIS WORK?
+                return left / right
+            else:
+                # TODO: Implement min
+                pdb.set_trace()
+                return left - right
+        else:
+            # Has to be 'LOGICAL_OPERATOR()'
+            if ctx.LOGICAL_OPERATOR().getText() == "and":
+                return And(left, right)
+            else:
+                # Has to be 'or'
+                return Or(left, right)
         return self.visitChildren(ctx)
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#term.
@@ -156,14 +198,27 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#value.
     def visitValue(self, ctx: BENEFIT_LANGUAGEParser.ValueContext):
-        # pdb.set_trace()
         # TODO Return an actual value, of correct sort
-        return self.visitChildren(ctx)
+        if ctx.PERCENT() is not None:
+            # TODO: Return a percent value
+            return 24
+        elif ctx.MONEY() is not None:
+            # TODO: Return a money value
+            return 24
+        elif ctx.DATE() is not None:
+            # TODO: Return a date value
+            return 24
+        elif ctx.INTEGER() is not None:
+            return IntVal(ctx.getText())
+        else:
+            # The only option left is Boolean
+            # Note that lower() is strictly unnecessary; True doesn't parse
+            return BoolVal(ctx.getText().lower() == 'true')
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#comment.
     def visitComment(self, ctx: BENEFIT_LANGUAGEParser.CommentContext):
+        # We return nothing, but print for information
         print(ctx.getText())
-        # return self.visitChildren(ctx)
 
 
 if __name__ == '__main__':
