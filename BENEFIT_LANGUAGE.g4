@@ -39,7 +39,7 @@ statement
 // BEN statements
 
 declare_function
-  : declare_variable '=' OPEN_CURLY_BRACKET expression CLOSE_CURLY_BRACKET
+  : declare_variable '=' '{' expression '}'
   ;
 
 declare_enum_variable
@@ -55,15 +55,15 @@ declare_enum_type
   ;
 
 expression
-  : '(' expression ')'
-  | expression multdiv=('*'|'/') expression
-  | expression plusminus=('+'|'-') expression
-  | expression comparison=('=='|'<='|'<'|'>='|'>') expression
-  | expression and='and' expression
-  | expression or='or' expression
-  | expression min='min' expression
-  | if_then_else
-  | term
+  : '(' unbracket=expression ')'
+  | left=expression multdiv=('*'|'/') right=expression
+  | left=expression plusminus=('+'|'~-') right=expression
+  | left=expression comparison=('=='|'<='|'<'|'>='|'>') right=expression
+  | left=expression and='and' right=expression
+  | left=expression or='or' right=expression
+  | left=expression min=MIN right=expression
+  | ite=if_then_else
+  | atom=term
   ;
 
 if_then_else
@@ -71,11 +71,15 @@ if_then_else
   ;
 
 term
-  : ENUM_REFERENCE | VARIABLE_NAME | value
+  : enum_reference | VARIABLE_NAME | value
   ;
 
 value
   : PERCENT | MONEY | DATE | INTEGER | BOOLEAN
+  ;
+
+enum_reference
+  : ENUM_VARIABLE_NAME '.' VARIABLE_NAME
   ;
 
 // Everything from a # to end of line is marked as a comment
@@ -155,74 +159,14 @@ COMMENT
 
 // Operators - precedence order is important
 
-COMPARATOR
-  : IS_EQUAL_TO | IS_LESS_THAN_OR_EQUAL_TO | IS_LESS_THAN | IS_GREATER_THAN_OR_EQUAL_TO | IS_GREATER_THAN | ADD | BOUNDED_SUBTRACT | MULTIPLY | DIVIDE | MIN
-  ;
-
-LOGICAL_OPERATOR
-  : AND | OR
-  ;
-
-IS_EQUAL_TO
-  : '=='
-  ;
-
-IS_LESS_THAN_OR_EQUAL_TO
-  : '<='
-  ;
-
-IS_LESS_THAN
-  : '<'
-  ;
-
-IS_GREATER_THAN_OR_EQUAL_TO
-  : '>='
-  ;
-
-IS_GREATER_THAN
-  : '>'
-  ;
-
-ASSIGN_EQUAL_TO
-  : '='
-  ;
-
-ADD
-  : '+'
-  ;
-
-BOUNDED_SUBTRACT
-  : '~-'
-  ;
-
-MULTIPLY
-  : '*'
-  ;
-
-DIVIDE
-  : '/'
-  ;
-
 MIN // This operator goes above VARIABLE_NAME to establish precedence
   : 'min'
-  ;
-
-AND // likewise
-  : 'and'
-  ;
-
-OR // likewise
-  : 'or'
   ;
 
 // Data types
 
 VARIABLE_TYPE // Excludes Enum as that is defined at time of declaration
   : 'Integer' | 'Money' | 'Percent' | 'Date' | 'Boolean'
-  ;
-
-ENUM_REFERENCE
-  : ENUM_VARIABLE_NAME DECIMAL_POINT VARIABLE_NAME
   ;
 
 ENUM_VARIABLE_NAME

@@ -44,23 +44,13 @@ class BENEFIT_LANGUAGEVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by BENEFIT_LANGUAGEParser#bracketed_expression.
-    def visitBracketed_expression(self, ctx:BENEFIT_LANGUAGEParser.Bracketed_expressionContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by BENEFIT_LANGUAGEParser#if_then_else.
-    def visitIf_then_else(self, ctx:BENEFIT_LANGUAGEParser.If_then_elseContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#expression.
     def visitExpression(self, ctx:BENEFIT_LANGUAGEParser.ExpressionContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by BENEFIT_LANGUAGEParser#unbracketed_expression.
-    def visitUnbracketed_expression(self, ctx:BENEFIT_LANGUAGEParser.Unbracketed_expressionContext):
+    # Visit a parse tree produced by BENEFIT_LANGUAGEParser#if_then_else.
+    def visitIf_then_else(self, ctx:BENEFIT_LANGUAGEParser.If_then_elseContext):
         return self.visitChildren(ctx)
 
 
@@ -71,6 +61,11 @@ class BENEFIT_LANGUAGEVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#value.
     def visitValue(self, ctx:BENEFIT_LANGUAGEParser.ValueContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by BENEFIT_LANGUAGEParser#enum_reference.
+    def visitEnum_reference(self, ctx:BENEFIT_LANGUAGEParser.Enum_referenceContext):
         return self.visitChildren(ctx)
 
 

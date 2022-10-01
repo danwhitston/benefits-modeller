@@ -1,4 +1,5 @@
 # Based on https://github.com/antlr/antlr4/blob/4.6/doc/python-target.md
+from operator import or_
 from symbol import for_stmt
 import sys
 from pathlib import Path
@@ -75,7 +76,6 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
         # This declares a constant rather than variable, which is
         # not strictly incorrect - it's an unknown constant
         solver_objects[var_name] = Const(var_name, solver_objects[enum_name])
-        # return self.visitChildren(ctx)
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#declare_variable.
     def visitDeclare_variable(self, ctx: BENEFIT_LANGUAGEParser.Declare_variableContext):
@@ -115,35 +115,32 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
         solver_objects[enum_name] = solver_objects[enum_name].create()
         # We don't return anything!
 
-    # Visit a parse tree produced by BENEFIT_LANGUAGEParser#bracketed_expression.
-    def visitBracketed_expression(self, ctx: BENEFIT_LANGUAGEParser.Bracketed_expressionContext):
-        # Return the expression result, specifically
-        # If we don't do this, the brackets lead to a None return value
-        return self.visit(ctx.expression())
-
-    # Visit a parse tree produced by BENEFIT_LANGUAGEParser#if_then_else.
-    def visitIf_then_else(self, ctx: BENEFIT_LANGUAGEParser.If_then_elseContext):
-        if_value = self.visit(ctx.children[1])
-        # Temporary pickup of errors before they happen
-        if not isinstance(if_value, (bool)):
-            pdb.set_trace()
-        # In the current definition, if, then, else are elements 0, 2, 4
-        return If(self.visit(ctx.children[1]), self.visit(ctx.children[3]), self.visit(ctx.children[5]))
-
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#expression.
     def visitExpression(self, ctx: BENEFIT_LANGUAGEParser.ExpressionContext):
-        # No need to do anything here
-        # All possibilities are themselves stops in the tree visitor
-        return self.visitChildren(ctx)
+        if ctx.left is not None:
+            left = self.visit(ctx.left)
 
-    # Visit a parse tree produced by BENEFIT_LANGUAGEParser#unbracketed_expression.
-    def visitUnbracketed_expression(self, ctx: BENEFIT_LANGUAGEParser.Unbracketed_expressionContext):
-        # TODO: This is the big one! Get three elements, return two terms w/ operator
-        left = self.visit(ctx.children[0])
-        right = self.visit(ctx.children[2])
-        # THE BIG ONE!
-        if ctx.COMPARATOR() is not None:
-            op_text = ctx.COMPARATOR().getText()
+        if ctx.right is not None:
+            right = self.visit(ctx.right)
+
+        if ctx.unbracket is not None:
+            return self.visit(ctx.unbracket)
+
+        if ctx.multdiv is not None:
+            if ctx.multdiv.text == "*":
+                return left * right
+            else:
+                return left / right
+
+        if ctx.plusminus is not None:
+            if ctx.plusminus.text == "+":
+                return left + right
+            else:  # ctx.plusminus.text == "~-"
+                # TODO: Add 0 lower bound
+                return left - right
+
+        if ctx.comparison is not None:
+            op_text = ctx.comparison.text
             if op_text == "==":
                 return left == right
             elif op_text == "<=":
@@ -152,31 +149,30 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
                 return left < right
             elif op_text == ">=":
                 return left >= right
-            elif op_text == ">":
+            else:  # op_text == ">"
                 return left > right
-            elif op_text == "+":
-                return left + right
-            elif op_text == "~-":
-                # TODO: Implement bounded subtract
-                pdb.set_trace()
-                return left + right
-            elif op_text == "*":
-                return left * right
-            elif op_text == "/":
-                # TODO: DOES THIS WORK?
-                return left / right
-            else:
-                # TODO: Implement min
-                pdb.set_trace()
-                return left - right
-        else:
-            # Has to be 'LOGICAL_OPERATOR()'
-            if ctx.LOGICAL_OPERATOR().getText() == "and":
-                print("and: ", left, right)
-                return And(left, right)
-            else:
-                # Has to be 'or'
-                return Or(left, right)
+
+        if ctx.and_ is not None:
+            return And(left, right)
+
+        if ctx.or_ is not None:
+            return Or(left, right)
+
+        if ctx.min_ is not None:
+            # TODO: Create Min function in Z3Py
+            return left
+            # return min(left, right)
+
+        if ctx.ite is not None:
+            return self.visit(ctx.ite)
+
+        if ctx.atom is not None:
+            return self.visit(ctx.atom)
+
+    # Visit a parse tree produced by BENEFIT_LANGUAGEParser#if_then_else.
+    def visitIf_then_else(self, ctx: BENEFIT_LANGUAGEParser.If_then_elseContext):
+        # In the current definition, if, then, else are elements 0, 2, 4
+        return If(self.visit(ctx.children[1]), self.visit(ctx.children[3]), self.visit(ctx.children[5]))
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#term.
     def visitTerm(self, ctx: BENEFIT_LANGUAGEParser.TermContext):
@@ -187,12 +183,10 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
         elif ctx.VARIABLE_NAME() is not None:
             var_name = ctx.getText()
             return solver_objects[var_name]
-        else:
-            # This MUST be an enum reference
-            # TODO: Work out how to parse and set this
-            pdb.set_trace()
-            enum_name = 5
-            enum_reference = solver_objects[4]
+        else:  # ctx.enum_reference() is not None
+            enum_var = solver_objects[ctx.enum_reference().ENUM_VARIABLE_NAME().getText()]
+            enum_attribute = ctx.enum_reference().VARIABLE_NAME().getText()
+            return getattr(enum_var, enum_attribute)
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#value.
     def visitValue(self, ctx: BENEFIT_LANGUAGEParser.ValueContext):
@@ -208,8 +202,7 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
             return 24
         elif ctx.INTEGER() is not None:
             return IntVal(ctx.getText())
-        else:
-            # The only option left is Boolean
+        else:  # ctx.BOOLEAN() is not None
             # Note that lower() is strictly unnecessary; True doesn't parse
             return BoolVal(ctx.getText().lower() == 'true')
 

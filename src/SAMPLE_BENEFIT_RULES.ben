@@ -188,38 +188,10 @@ Money uc_childcare_element = {
 }
 
 # Ruleset 12 - A housing costs element under UC
-Money uc_housing_costs_element = {
-  if uc_housing_type == Housing_type.none
-  then £0
-  else (
-    if uc_housing_type == Housing_type.private
-    then uc_housing_private_cost
-    else (
-      if uc_housing_type == Housing_type.social
-      then uc_housing_social_cost
-      else uc_housing_owner_occupier_cost
-    )
-  )
-}
 
-Money uc_housing_private_cost = {
-  (uc_housing_private_core_rent min uc_housing_private_cap_rent) ~- uc_nondependent_deduction
-}
-
-Money uc_housing_private_core_rent = {
-  (rent * number_of_relevant_family_occupants) / number_of_liable_occupants  
-}
-
-Money uc_housing_private_cap_rent = {
-  local_housing_allowance_for_your_family
-}
-
-Money uc_nondependent_deduction = {
-  £72.16 * number_of_nondependant_family_occupants
-}
-
-Money uc_housing_social_cost = {
-  rent ~- uc_housing_bedroom_tax
+# The qualifying period makes £0 the default value for new claims
+Money uc_housing_owner_occupier_cost = {
+  £0
 }
 
 Money uc_housing_bedroom_tax = {
@@ -232,9 +204,38 @@ Money uc_housing_bedroom_tax = {
   )
 }
 
-# The qualifying period makes £0 the default value for new claims
-Money uc_housing_owner_occupier_cost = {
-  £0
+Money uc_housing_social_cost = {
+  rent ~- uc_housing_bedroom_tax
+}
+
+Money uc_nondependent_deduction = {
+  £72.16 * number_of_nondependant_family_occupants
+}
+
+Money uc_housing_private_cap_rent = {
+  local_housing_allowance_for_your_family
+}
+
+Money uc_housing_private_core_rent = {
+  (rent * number_of_relevant_family_occupants) / number_of_liable_occupants  
+}
+
+Money uc_housing_private_cost = {
+  (uc_housing_private_core_rent min uc_housing_private_cap_rent) ~- uc_nondependent_deduction
+}
+
+Money uc_housing_costs_element = {
+  if uc_housing_type == Housing_type.none
+  then £0
+  else (
+    if uc_housing_type == Housing_type.private
+    then uc_housing_private_cost
+    else (
+      if uc_housing_type == Housing_type.social
+      then uc_housing_social_cost
+      else uc_housing_owner_occupier_cost
+    )
+  )
 }
 
 # Ruleset 4 - How much is your maximum amount of UC?
