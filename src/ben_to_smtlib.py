@@ -1,8 +1,8 @@
 # Based on https://github.com/antlr/antlr4/blob/4.6/doc/python-target.md
-from ast import For
 from symbol import for_stmt
 import sys
 from pathlib import Path
+from unittest import case
 from z3 import *
 
 import pdb
@@ -63,7 +63,11 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#declare_function.
     def visitDeclare_function(self, ctx: BENEFIT_LANGUAGEParser.Declare_functionContext):
-        return self.visitChildren(ctx)
+        declared_var = self.visit(ctx.getChild(0))
+        inside_brackets = self.visit(ctx.getChild(3))
+        # pdb.set_trace()
+        # TODO Declare the two things equivalent
+        # return self.visitChildren(ctx)
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#declare_enum_variable.
     def visitDeclare_enum_variable(self, ctx: BENEFIT_LANGUAGEParser.Declare_enum_variableContext):
@@ -77,11 +81,27 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#declare_variable.
     def visitDeclare_variable(self, ctx: BENEFIT_LANGUAGEParser.Declare_variableContext):
-
+        global solver_objects
+        var_type = ctx.getChild(0).getText()
+        var_name = ctx.getChild(1).getText()
+        # TODO: Create Money, Percent, Dayte datatypes, or just treat as Int?
+        if var_type == "Integer":
+            solver_objects[var_name] = Int(var_name)
+        elif var_type == "Money":
+            solver_objects[var_name] = Int(var_name)
+            # solver_objects[var_name] = Money(var_name)
+        elif var_type == "Percent":
+            solver_objects[var_name] = Int(var_name)
+            # solver_objects[var_name] = Percent(var_name)
+        elif var_type == "Date":
+            solver_objects[var_name] = Int(var_name)
+            # solver_objects[var_name] = Dayte(var_name)
+        else:
+            solver_objects[var_name] = Bool(var_name)
         # We return the newly created variable, in case it forms part of a
         # function declaration, and the parent wants to use what we've
         # declared to make an assertion, in SMT-LIB-speak
-        return self.visitChildren(ctx)
+        return solver_objects[var_name]
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#declare_enum_type.
     def visitDeclare_enum_type(self, ctx: BENEFIT_LANGUAGEParser.Declare_enum_typeContext):
@@ -90,7 +110,7 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
         global solver_objects
         enum_name = ctx.children[1].getText()
         solver_objects[enum_name] = Datatype(enum_name)
-        number_of_enum_values = (ctx.getChildCount() - 3)//2
+        number_of_enum_values = (ctx.getChildCount() - 3) // 2
         for x in range(number_of_enum_values):
             # Note this is 0 to number_of_enum_values -1
             solver_objects[enum_name].declare(ctx.children[(x * 2) + 3].getText())
@@ -104,6 +124,9 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#if_then_else.
     def visitIf_then_else(self, ctx: BENEFIT_LANGUAGEParser.If_then_elseContext):
+        if_value = self.visit(ctx.children[1])
+        if not isinstance(if_value, (bool)):
+            pdb.set_trace()
         # In the current definition, if, then, else are elements 0, 2, 4
         return If(self.visit(ctx.children[1]), self.visit(ctx.children[3]), self.visit(ctx.children[5]))
 
@@ -117,15 +140,30 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#term.
     def visitTerm(self, ctx: BENEFIT_LANGUAGEParser.TermContext):
-        return self.visitChildren(ctx)
+        global solver_objects
+        # A term is either a value, or the name of a variable, or an enum reference
+        if ctx.value() is not None:
+            return self.visitChildren(ctx)  # Does this return an object or an array?
+        elif ctx.VARIABLE_NAME() is not None:
+            var_name = ctx.getText()
+            return solver_objects[var_name]
+        else:
+            # This MUST be an enum reference
+            # TODO: Work out how to parse and set this
+            pdb.set_trace()
+            enum_name = 5
+            enum_reference = solver_objects[4]
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#value.
     def visitValue(self, ctx: BENEFIT_LANGUAGEParser.ValueContext):
+        # pdb.set_trace()
+        # TODO Return an actual value, of correct sort
         return self.visitChildren(ctx)
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#comment.
     def visitComment(self, ctx: BENEFIT_LANGUAGEParser.CommentContext):
-        return self.visitChildren(ctx)
+        print(ctx.getText())
+        # return self.visitChildren(ctx)
 
 
 if __name__ == '__main__':
