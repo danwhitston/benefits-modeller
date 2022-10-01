@@ -117,9 +117,9 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#bracketed_expression.
     def visitBracketed_expression(self, ctx: BENEFIT_LANGUAGEParser.Bracketed_expressionContext):
-        # No need to do anything here
-        # All possibilities are themselves stops in the tree visitor
-        return self.visitChildren(ctx)
+        # Return the expression result, specifically
+        # If we don't do this, the brackets lead to a None return value
+        return self.visit(ctx.expression())
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#if_then_else.
     def visitIf_then_else(self, ctx: BENEFIT_LANGUAGEParser.If_then_elseContext):
@@ -143,8 +143,6 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
         right = self.visit(ctx.children[2])
         # THE BIG ONE!
         if ctx.COMPARATOR() is not None:
-            pdb.set_trace()
-            # TODO: Deal with IS_EQUAL_TO | IS_LESS_THAN_OR_EQUAL_TO | IS_LESS_THAN | IS_GREATER_THAN_OR_EQUAL_TO | IS_GREATER_THAN | ADD | BOUNDED_SUBTRACT | MULTIPLY | DIVIDE | MIN
             op_text = ctx.COMPARATOR().getText()
             if op_text == "==":
                 return left == right
@@ -165,7 +163,7 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
             elif op_text == "*":
                 return left * right
             elif op_text == "/":
-                # DOES THIS WORK?
+                # TODO: DOES THIS WORK?
                 return left / right
             else:
                 # TODO: Implement min
@@ -174,11 +172,11 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
         else:
             # Has to be 'LOGICAL_OPERATOR()'
             if ctx.LOGICAL_OPERATOR().getText() == "and":
+                print("and: ", left, right)
                 return And(left, right)
             else:
                 # Has to be 'or'
                 return Or(left, right)
-        return self.visitChildren(ctx)
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#term.
     def visitTerm(self, ctx: BENEFIT_LANGUAGEParser.TermContext):

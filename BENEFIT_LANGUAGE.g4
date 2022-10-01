@@ -39,7 +39,7 @@ statement
 // BEN statements
 
 declare_function
-  : declare_variable '=' OPEN_CURLY_BRACKET (expression | if_then_else) CLOSE_CURLY_BRACKET
+  : declare_variable '=' OPEN_CURLY_BRACKET expression CLOSE_CURLY_BRACKET
   ;
 
 declare_enum_variable
@@ -54,20 +54,20 @@ declare_enum_type
   : 'Enum' ENUM_VARIABLE_NAME OPEN_BRACKET VARIABLE_NAME (LIST_SEPARATOR VARIABLE_NAME)* CLOSE_BRACKET
   ;
 
-bracketed_expression
-  : OPEN_BRACKET expression CLOSE_BRACKET
+expression
+  : '(' expression ')'
+  | expression multdiv=('*'|'/') expression
+  | expression plusminus=('+'|'-') expression
+  | expression comparison=('=='|'<='|'<'|'>='|'>') expression
+  | expression and='and' expression
+  | expression or='or' expression
+  | expression min='min' expression
+  | if_then_else
+  | term
   ;
 
 if_then_else
   : 'if' expression 'then' expression 'else' expression
-  ;
-
-expression
-  : (bracketed_expression | unbracketed_expression | if_then_else | term)
-  ;
-
-unbracketed_expression
-  : (term | bracketed_expression) (COMPARATOR | LOGICAL_OPERATOR) expression
   ;
 
 term
