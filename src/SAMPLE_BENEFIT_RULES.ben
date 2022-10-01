@@ -45,6 +45,11 @@ Integer number_of_nondependant_family_occupants
 Money rent
 Integer uc_housing_excess_bedrooms
 
+Money combined_savings
+Money uc_work_allowance
+Money uc_unearned_income # This is ruleset 6, oddly
+
+
 # Ruleset 1 - When you come under the universal credit system
 # In practice, anyone for whom this is false falls outside of the model
 # Don't include logic for UC Gateway claimants as they're outside of model dates
@@ -56,14 +61,8 @@ Boolean comes_under_uc = {
 }
 
 # Ruleset 2 - Are you eligible for Universal Credit?
-Boolean eligible_for_uc = {
-  (comes_under_uc == true)
-  and (claimant_eligible_for_uc == true)
-  and ((is_couple == false) or (partner_eligible_for_uc == true))
-  and (combined_savings <= £16000)
-  and (uc_entitlement > £0)
-}
-
+# We've reversed order of definitions because our solver requires
+# variables to be defined *before* we use them
 Boolean claimant_eligible_for_uc = {
   ((age_of_claimant >= 18) or (age_of_claimant >= 16 and claimant_is_uc_eligible_young_person == true))
   and (claimant_is_below_pension_age == true)
@@ -84,33 +83,16 @@ Boolean partner_eligible_for_uc = {
   and (partner_has_accepted_partner_commitment == true)
 }
 
-# Ruleset 3 - How much Universal Credit do you get?
-# Note the use of ~- means this cannot go below £0
-Money uc_entitlement = {
-  uc_maximum_amount ~- uc_earnings_taper ~- uc_unearned_income
-}
-
-# Ruleset 4 - How much is your maximum amount of UC?
-Money uc_maximum_amount = {
-  uc_standard_allowance
-  + uc_children_allowance
-  + uc_work_incapability_element
-  + uc_carer_element
-  + uc_childcare_element
-  + uc_housing_costs_element
-}
-
 # Ruleset 5 - What is the earnings taper?
-Money uc_earnings_taper = {
-  (uc_net_earnings ~- uc_work_allowance) * 63% 
-}
-
+# We've reversed order of definitions because our solver requires
+# variables to be defined *before* we use them
 Money uc_net_earnings = {
   claimant_net_earnings + partner_net_earnings
 }
 
-# Ruleset 6 - What is unearned income for UC?
-Money uc_unearned_income
+Money uc_earnings_taper = {
+  (uc_net_earnings ~- uc_work_allowance) * 63% 
+}
 
 # Ruleset 7 - The standard UC allowance
 Money uc_standard_allowance = {
@@ -163,15 +145,6 @@ Money uc_carer_element = {
 }
 
 # Ruleset 11 - An allowance for childcare under UC
-Money uc_childcare_element = {
-  if is_uc_childcare_eligible == true
-  then (
-    if number_of_children == 1
-    then (uc_childcare_proportion min £646.35)
-    else (uc_childcare_proportion min £1108.04)
-  )
-  else £0
-}
 
 # We assume that all children are under 16
 Boolean is_uc_childcare_eligible = {
@@ -202,6 +175,16 @@ Boolean is_uc_childcare_eligible = {
 
 Money uc_childcare_proportion = {
   childcare_spend * 85%
+}
+
+Money uc_childcare_element = {
+  if is_uc_childcare_eligible == true
+  then (
+    if number_of_children == 1
+    then (uc_childcare_proportion min £646.35)
+    else (uc_childcare_proportion min £1108.04)
+  )
+  else £0
 }
 
 # Ruleset 12 - A housing costs element under UC
@@ -252,4 +235,33 @@ Money uc_housing_bedroom_tax = {
 # The qualifying period makes £0 the default value for new claims
 Money uc_housing_owner_occupier_cost = {
   £0
+}
+
+# Ruleset 4 - How much is your maximum amount of UC?
+# We've reversed order of definitions because our solver requires
+# variables to be defined *before* we use them
+Money uc_maximum_amount = {
+  uc_standard_allowance
+  + uc_children_allowance
+  + uc_work_incapability_element
+  + uc_carer_element
+  + uc_childcare_element
+  + uc_housing_costs_element
+}
+
+# Ruleset 3 - How much Universal Credit do you get?
+# Note the use of ~- means this cannot go below £0
+Money uc_entitlement = {
+  uc_maximum_amount ~- uc_earnings_taper ~- uc_unearned_income
+}
+
+# Carried forward from Ruleset 2
+# We've reversed order of definitions because our solver requires
+# variables to be defined *before* we use them
+Boolean eligible_for_uc = {
+  (comes_under_uc == true)
+  and (claimant_eligible_for_uc == true)
+  and ((is_couple == false) or (partner_eligible_for_uc == true))
+  and (combined_savings <= £16000)
+  and (uc_entitlement > £0)
 }
