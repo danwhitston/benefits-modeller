@@ -1,6 +1,6 @@
 # Elements of rules
 
-Now that we have a set of sample benefit rules, we can identify the types of relation and operator that we need to represent the rules.
+Now that a set of sample benefit rules have been characterised, it is possible to identify the language elements that are needed to represent the rules. The name of the language is Ben, and the aim is to keep it simple. This simplicity is partly because the rules should not require too much complexity to capture, and partly because a simpler language will be easier to express as a grammar and convert to Z3Py. As long as the structure is reasonably well-formed, it should be possible to extend later without having to significantly rework any Ben code that has been written.
 
 ## Structure and flow
 
@@ -27,49 +27,68 @@ The SMT solver can be used to assert both 'satisfiability', i.e. that it is poss
 
 ### Whitespace and newlines
 
-For the ANTLR4 lexer and parser I'm using, a common approach is to skip all whitespace and newlines. This removes these elements from consideration, while still preventing tokenisation from taking place across text that is separated by either. Regardless, the sample benefit rules are keeping to roughly one expression per line, give or take occasional one-line bracketed expressions. The end of each statement is also followed by a newline, for readability and ease of structuring, but style is not enforced...
+For the ANTLR4 lexer and parser, a common approach is to skip all whitespace and newlines. This removes these elements from consideration, while still preventing tokenisation from taking place across text that is separated by either. Regardless, the sample benefit rules are keeping to roughly one expression per line, give or take occasional one-line bracketed expressions. The end of each statement is also followed by a newline, for readability and ease of structuring, but style is not enforced...
 
 ### Comments
 
 ...except with comments! The language uses a `#` symbol to indicate the start of a comment, and the rest of the line until a newline is taken verbatim as the content of the comment, and none of it is matched to other code constructs.
 
-Per <https://github.com/CatalaLang/catala#concepts>, the Catala DSL as a literate programming language extends commenting into a full annotation system that places the code implementation of each law in the context of an overall document structure and textual explanation of the rules that the code is designed to represent. That isn't part of the current design of the language, but tokenisation of comments is at least a step in the right direction, since it enables inclusion of comments into derived models. This could potentially, in future, form the basis of a textual explanation for proofs derived from the model.
+Per Merigoux et al. (2022), the Catala DSL as a literate programming language extends commenting into a full annotation system that places the code implementation of each law in the context of an overall document structure and textual explanation of the rules that the code is designed to represent. That isn't part of the current design of the language, but tokenisation of comments is at least a step in the right direction, since it enables inclusion of comments into derived models. This could potentially, in future, form the basis of a textual explanation for proofs derived from the model.
 
-However, tokenisation also requires that comments be explicitly recognised and assigned within each place in the code structure that they can appear. It's possible to direct comment tokens to a different channel with a lexer-only ANTLR4 configuration, thus letting them be used anywhere in a code file. Since the grammar as written is a combined lexer and parser, this option is not available. Rather than adding comment as a recognised token between every pair of elements, they've been relegated to only being recognised as complete statements, meaning they can be used before or after a full statement but not in the middle of one.
+However, tokenisation also requires that comments be explicitly recognised and assigned within each place in the code structure that they can appear. Per the Channels section of Tomassetti (2017), it's possible to direct comment tokens to a different channel with a lexer-only ANTLR4 configuration, thus letting them be used anywhere in a code file. Since the grammar as written is a combined lexer and parser, this option is not available. Rather than adding comment as a recognised token between every pair of elements, they've been relegated to only being recognised as complete statements, meaning they can be used before or after a full statement but not in the middle of one.
 
-### List separator
+### List
+
+There is currently only one way that lists get used in Ben, and that is to create a new enum type. An enum type can have an arbitrary number of enum values, and we declare the type before we create a variable that can take one of the enum values defined in the type. A list is enclosed by brackets, with a comma between each list item.
+
+For example:
+
+```ben
+Enum Housing_type(none, private, social, owner_occupier)
+```
 
 ### Expression
 
-### Bracketed expression
+Expressions went through several stages of modelling by trial and error. The current thinking is that:
 
-### Curly bracketed expression
+1. An expression does not stand alone in Ben. In rule definitions, statements only appear as part of function creation, where a variable is assigned to be equal to an expression. Expressions don't appear at all in test cases.
+2. Brackets can be used to assert a non-default operator precedence in expression parsing, or for visual effect if the precedence is unchanged by their presence.
+3. An expression can consist of two sub-expressions separated by an operator, or an if-then-else construct with three sub-expressions, or a single term which acts as the leaf node for its branch of an expression tree.
+4. Each sub-expression follows the same rules as its parent, such that a single expression can grow into an expression tree as each of its sub-expressions has its own sub-expressions and so on.
+
+This tree structure is why the visitor pattern is used to walk the parsed Ben file. Directly including the recursed calls to child nodes in Python expressions is easier if the whole statement can be evaluated at once.
+
+In the language as defined, curly brackets are only used in a function declaration, that is, declaring a variable and asserting it as equal to the value produced by an expression. For example: `Money uc_earnings_taper = { (uc_net_earnings ~- uc_work_allowance) * 63% }`
+
+### Term
+
+As mentioned above, terms are the leaf nodes in an expression tree. A term can be:
+
+* An enum reference, i.e. a particular enum value such as `Housing_type.social`.
+* A variable name, i.e. the name of a previously declared variable such as `uc_nondependent_deduction`. This could be a variable whose existence and type have been declared, or one that has been asserted as equal to the value of a function.
+* A constant value, i.e. a fixed value of a defined type. Without using direct type-hinting, the form of each value must make it possible to lex, parse and programmatically determine the value's type as well as the value's, er, value. For example, £34 is Money, and '2018-07-23' is Date.
+
+All of these require careful definition and ordering of both lexer tokens and parser definitions.
 
 ## Datatypes
 
 The rules as described lend themselves to representation using strongly typed objects, since each rule always applies to the same type of value and produces the same type of output.
 
-One cause of uncertainty is that, for some calculations, it is unclear how best to communicate either (i) the amount of a benefit, or (ii) that the claimant is not eligible for the benefit in question. The options seem to be:
+Using the sample benefit rules as a base, we need to handle integers (which are always non-negative in the sample rules), money, percentages, dates, Booleans, and enums. There is no place where we make explicit use of fractions or lists, although percentages are functionally fractions and enums are functionally a selection from a list of options.
 
-* If we use two variables, e.g. ucEligible and ucAmount, then it would be possible to represent impossible combinations, for example ucEligible = false and ucAmount = £300.
-* If we use a combined variable, returning either the value or false, we could get meaningless calculations like `false - 50`.
-* If we treat ucAmount = £0 as meaning that a claimant is not eligible for UC, then we could theoretically find a failure mode where someone is eligible but their eligible amount is £0, and a further piece of logic that relies on eligibility status incorrectly assumes ineligibility.
-
-The simplest way around this is to take care to follow the actual benefit logic when defining eligibility and amount of benefit. Where the two are calculated differently, such that a claimant could be eligible but for £0, we should define two separate functions, as per ucEligible and ucAmount. Where ineligibility is determined by a £0 amount, we can choose from just using ucAmount, or define ucEligible = (ucAmount == £0). It should never be possible for the definitions to be so misaligned that ucEligible is false but ucAmount is non-zero.
+The internal representations available to Z3Py are rather more sparse. For ease of modelling in the time available, it was decided to use the a minimally feasible representation and logic for each datatype, rather than e.g. encoding leap years and date differences in the handling of dates.
 
 ### Integer
 
 Example: number of children is a non-negative integer used to determine whether a claimant comes under UC in rule 1, UC work allowance (rule 5), UC children's allowance (rule 8), childcare allowance (rule 11).
 
-There do not appear to be any situations in the model where a negative number is carried forward from a calculation. For example, the earnings tape in rule 5 has a cut-off at 0, which I've implemented by taking the maximum of 0 or the calculated amount.
-
-I also can't immediately find situations where an integer is divided, which removes the need to consider fractions of integers.
+There do not appear to be any situations in the model where a negative number is carried forward from a calculation. For example, the earnings taper in rule 5 has a cut-off at 0, which I've implemented by taking the maximum of 0 or the calculated amount. There's an argument for creating a non-negative integer sort to ensure that Z3Py doesn't attempt to set negative values for variables when checking satisfiability and solvability.
 
 Values of type integer will be just the numeric digits, e.g. `123`, with no leading zeroes and the value zero represented by `0`. Negative integer representation can be added in later, if necessary.
 
 ### Money
 
-All money in the sample rules is in pounds and pence, normally written like £123.45. For the purposes of this model, we assume that any multiplication or division of money results in another money value in pounds and pence, rounded to the nearest penny. This introduces a minor source of error, since by this approach, 3.01 / 4 is 0.75, but 0.75 * 4 is 3.00.
+All money in the sample rules is in pounds and pence, normally written like £123.45. For the purposes of this model, we assume that any multiplication or division of money results in another money value in pounds and pence, rounded to the nearest penny. This introduces a source of error, since by this approach, £3.01 / 4 is £0.75, but £0.75 * 4 is £3.00.
 
 We need to support addition and subtraction (where both operands are money), and also multiplication (where one operand is an integer or a fraction) and division (where the denominator is an integer).
 
@@ -92,6 +111,12 @@ Dates in benefit modelling follow the Gregorian calendar, hence following ISO 86
 We define a variable as Date by writing `Date date_of_birth`.
 
 We will refer to dates in the standard ISO format YYYY-MM-DD, for example `'1977-03-13'`.
+
+In the sample rulesets, age is treated as an unrelated integer value that is entered separately from date of birth and date of claim. This limits the use of dates in the sample rulesets to comparison, that is: less-than, greater-than, less-than-or-equal-to, greater-than-or-equal-to, and equality.
+
+This is of particular use because it removes the need to calculate differences in dates, which requires full date parsing and a set of rules both for simple calculation of difference in years, and a different set of rules accounting for leap days when calculating difference in days.
+
+Accordingly, we can represent dates in Z3Py as strings, because modern Z3Py supports string comparison operators. The ISO standard format also has the advantage that Z3Py string comparisons produce the same results as comparisons of the actual dates.
 
 ### Boolean
 
@@ -183,3 +208,46 @@ A form of `if then else` with an arbitrary number of comparisons, specifically a
 ### Maximum: max() - not implemented
 
 As discussed earlier, `max(a, b)` would be needed to set a zero lower bound on subtraction if we didn't use zero-bounded subtraction. There don't appear to be any other uses in the present model, so there is no need to implement this operator at present.
+
+## Discussion points
+
+### Distinguishing eligibility and amount
+
+One cause of uncertainty is that, for some calculations, it is unclear how best to communicate either (i) the amount of a benefit, or (ii) that the claimant is not eligible for the benefit in question. The options seem to be:
+
+* If we use two variables, e.g. ucEligible and ucAmount, then it would be possible to represent impossible combinations, for example ucEligible = false and ucAmount = £300.
+* If we use a combined variable, returning either the value or false, we could get meaningless calculations like `false - 50`.
+* If we treat ucAmount = £0 as meaning that a claimant is not eligible for UC, then we could theoretically find a failure mode where someone is eligible but their eligible amount is £0, and a further piece of logic that relies on eligibility status incorrectly assumes ineligibility.
+
+The simplest way around this is to take care to follow the actual benefit logic when defining eligibility and amount of benefit. Where the two are calculated differently, such that a claimant could be eligible but for £0, we should define two separate functions, as per ucEligible and ucAmount. Where ineligibility is determined by a £0 amount, we can choose from just using ucAmount, or define ucEligible = (ucAmount == £0). It should never be possible for the definitions to be so misaligned that ucEligible is false but ucAmount is non-zero.
+
+### Dealing with multiple instances of an 'object'
+
+Another issue with the current language is that it doesn't support arrays. From personal experience, the author is aware that eligibility under the benefit rules at a point in time can be accurately modelled without use of arrays. However, it requires a significantly more complicated set of rules, with a substantial amount of duplication, and imposes an upper bound on collections that are not explicitly bounded, such as number of children, number of residents in a household, number of jobs being worked by each resident, and so on.
+
+Additionally to this, Z3Py is 
+
+### Extending the language to use SMT solver capabilities
+
+Looking at what can be done in the target language that Ben is being converted into, Z3Py, there are several future language possibilities that could make use of Z3's modelling and solving capabilities.
+
+#### Algebraic datatypes
+
+The Z3 expressions that are formed by recursing through a parsed Ben expression tree are already examples of abstract syntax trees (ASTs). Per Hong (2020a), it's also possible to define arbitrarily complex, recursive data structures that can be used for storage.
+
+Within the same variable, it may therefore be possible to store both eligibility (a Boolean) and/or a value which is only present if eligibility is true, and which could be e.g. Integer, Money, Date or some other calculated value. This would require further investigation, but could provide a solution to the 'problem' of calculations being available despite being inapplicable to a person's situation.
+
+It could also provide a way of collating an arbitrary set of contributory elements into a single record for e.g. a person, without having to enumerate each element individually at all times in the logic of the language. The entire set of benefits could in theory be modelled in this way.
+
+#### List comprehensions
+
+Not exactly a Z3 capability, but per Hong (2020b), it's possible to use standard Python list comprehensions to generate an arbitrary number of Z3 variables, which can be stored in a Python list and have Z3 functions or expressions applied to them. This or any Python looping at the level of the runner script could be used to instantiate an arbitrary number of children or residents in a household, without having to explore Z3 array representation.
+
+#### Arrays
+
+Z3 arrays could be used for large collections of values. As Hong (2020a) says, arrays 'should not be used to model small finite collections of values. It is usually much more efficient to create different variables using list comprehensions'. There are elements to the benefit rules which depend on large numbers of key-value lookups. These are primarily geographical lookups, such as the Local Housing Allowance rate for a property or the Council Tax rate for a property. While these could be modelled within the system, it would probably make sense to place them outside and introduce them via defined input values - there does not seem to be much modelling value to working backward from a required value for either of these to 
+
+#### Quantifiers
+
+Per Hong (2020a), Z3Py can handle quantifiers such as Exists and ForAll, although support for theorem proving is more limited. On a simple level, these could be added to Ben to express propositions or rules about arrays of values.
+
