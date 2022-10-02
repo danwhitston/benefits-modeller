@@ -1,4 +1,4 @@
-# Based on https://github.com/antlr/antlr4/blob/4.6/doc/python-target.md
+# Based on Parr (2016)
 import sys
 from pathlib import Path
 from z3 import *
@@ -37,13 +37,6 @@ def main(argv):
 
 
 class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
-    # Helper functions
-    def Min(self, a, b):
-        return If(a < b, a, b)
-
-    def Max(self, a, b):
-        return If(a > b, a, b)
-
     '''
     Each node either visits its children, or processes the content
     of itself and its immediate children if it's at the lowest
@@ -52,6 +45,13 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
     non-children statements, partly because the Ben language
     has no namespaces, at present.
     '''
+    # Helper functions
+    def Min(self, a, b):
+        return If(a < b, a, b)
+
+    def Max(self, a, b):
+        return If(a > b, a, b)
+
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#file.
     def visitFile(self, ctx: BENEFIT_LANGUAGEParser.FileContext):
         print("Begun solver setup")
@@ -84,20 +84,22 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#declare_variable.
     def visitDeclare_variable(self, ctx: BENEFIT_LANGUAGEParser.Declare_variableContext):
         global solver_objects
+        global s
         var_type = ctx.getChild(0).getText()
         var_name = ctx.getChild(1).getText()
         # TODO: Create Money, Percent, Dayte datatypes, or just treat as Int?
         if var_type == "Integer":
             solver_objects[var_name] = Int(var_name)
+            # To force non-negative integer, we assert a constraint on values taken
+            s.add(solver_objects[var_name] >= 0)
         elif var_type == "Money":
             solver_objects[var_name] = Int(var_name)
-            # solver_objects[var_name] = Money(var_name)
         elif var_type == "Percent":
-            solver_objects[var_name] = Int(var_name)
-            # solver_objects[var_name] = Percent(var_name)
+            # Not currently needed, and would require a fair amount of
+            # implementation logic to handle well
+            raise NotImplementedError("Unsupported behaviour: Percent variables not currently supported.")
         elif var_type == "Date":
-            solver_objects[var_name] = Int(var_name)
-            # solver_objects[var_name] = Dayte(var_name)
+            solver_objects[var_name] = String(var_name)
         else:
             solver_objects[var_name] = Bool(var_name)
         # We return the newly created variable, in case it forms part of a
@@ -117,7 +119,6 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
             # Note this is 0 to number_of_enum_values -1
             solver_objects[enum_name].declare(ctx.children[(x * 2) + 3].getText())
         solver_objects[enum_name] = solver_objects[enum_name].create()
-        # We don't return anything!
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#expression.
     def visitExpression(self, ctx: BENEFIT_LANGUAGEParser.ExpressionContext):
@@ -192,16 +193,27 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#value.
     def visitValue(self, ctx: BENEFIT_LANGUAGEParser.ValueContext):
+        '''
+        Parses a value and returns it as a Z3Py value. This reimplements
+        the lexer splitting of text into different elements. I can't
+        find a way to bring the individual tokens into the parser without
+        breaking lexing, which relies on having the full combination of
+        tokens present in the ordering to ensure that a value is
+        matched and tokenised appropriately.
+        '''
         # TODO Return an actual value, of correct sort
         if ctx.PERCENT() is not None:
-            # TODO: Return a percent value
-            return 24
+            pdb.set_trace()
+            # Yep, we're treating x% as x / 100, both Z3 ints
+            return IntVal(ctx.percent().INTEGER().getText()) / IntVal(100)
         elif ctx.MONEY() is not None:
+            pdb.set_trace()
             # TODO: Return a money value
             return 24
         elif ctx.DATE() is not None:
-            # TODO: Return a date value
-            return 24
+            # We save the full date as a string value in Z3Py,
+            # because Z3Py supports < <= > >= on strings nowadays
+            return StringVal(ctx.DATE().getText().strip("'"))
         elif ctx.INTEGER() is not None:
             return IntVal(ctx.getText())
         else:  # ctx.BOOLEAN() is not None
