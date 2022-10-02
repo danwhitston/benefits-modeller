@@ -1,6 +1,8 @@
 # Sample benefit rules
 
-Objective 1 of the project is to create a sample set of benefit rules and test cases. I'm using The Welfare Benefits and Tax Credits Handbook (Child Poverty Action Group, 2018) as a source of rules, and will express the rules in my own language, with references, to mitigate any risk of questions around copyright and plagiarism. Rather than taking a random sample, I've decided to start with one regulation and spread outwards to cover an interconnected set of dependent rules. This will enable the modelling of a system of rules instead of just running them in isolation, which will make it easier to test the behaviour of the system and the SMT solver with more complex models. The SMT solver would be of no benefit in 'solving' individual rules.
+Objective 1 of the project is to create a sample set of benefit rules and test cases. The source used for both is The Welfare Benefits and Tax Credits Handbook (Child Poverty Action Group, 2018). The rules are expressed in the author's own language, with references, to mitigate any risk of questions around copyright and plagiarism.
+
+The original plan was to model a random sample of rules from the book, but by inspection, this would have had no real modelling value when it to understanding the behaviour of a more complex system of rules. Thus, the model starts with one regulation and spread outwards to cover an interconnected set of dependent rules. This will enable the modelling of a system of rules instead of just running them in isolation, which will make it easier to test the behaviour of the system and the SMT solver with more complex models. The SMT solver would be of no benefit in 'solving' individual rules.
 
 ## Limits to the model
 
@@ -8,13 +10,13 @@ The main limitation of the model is that we are modelling a subset of the overal
 
 ### Location
 
-Per p3-4 of the handbook, the handbook's rules apply to England and Wales. Scotland has broadly the same legislation but has the power to diverge. Northern Ireland has separate legislation on benefits and tax credits, although the systems are similar in practice. Beyond this, where a claimant lives has further impact on several aspects of benefits - there are local taxes and benefits such as council tax and discretionary housing payments; the council tax also varies according to the designated property band of the claimant's home and their household status. (p XX)
+Per Child Poverty Action Group (2018, pp.3-4), the handbook's rules apply to England and Wales. Scotland has broadly the same legislation but has the power to diverge. Northern Ireland has separate legislation on benefits and tax credits, although the systems are similar in practice. Beyond this, where a claimant lives has further impact on several aspects of benefits - there are local taxes and benefits such as council tax and discretionary housing payments; the council tax also varies according to the designated property band of the claimant's home and their household status.
 
 ### Dates
 
 In common with all rules being discussed, the rules have changed in the years since the handbook was published. In this case the change is particularly acute: no new claims can be made for the benefits classed as legacy benefits, since all new claims are for Universal Credit. This does not affect the correctness of the rules being modelled, *for the period in which those rules were in effect*. All benefit rules have the same issue of time dependence. Not only the conditions of eligibility but also the payment amounts and even the existence of rules changes over time. Not only do claimants' circumstances change, but people get older, which changes their eligibility in and of itself.
 
-Since the handbook we're using as a basis for our modelling only applies to a limited timespan, we will limit our modelling to claims with a date of new claim falling within the period of validity. The handbook's acknowledgements (p.iv) state that the law covered in the book was correct on 5/3/2018, so we shall set the limit for new claim dates to between 5/3/2018 and 4/3/2019, for now. Likewise, we will not model payment dates outside of those lower and upper limits.
+Since the handbook we're using as a basis for our modelling only applies to a limited timespan, we will limit our modelling to claims with a date of new claim falling within the period of validity. The handbook's acknowledgements (Child Poverty Action Group, 2018, p.iv) state that the law covered in the book was correct on 5/3/2018, so we shall set the limit for new claim dates to between 5/3/2018 and 4/3/2019, for now. Likewise, we will not model payment dates outside of those lower and upper limits.
 
 ### Payments vs eligibility
 
@@ -22,7 +24,7 @@ There are situations in which someone's eligibility for a benefit is not establi
 
 ## Ruleset 1 - When you come under the universal credit system
 
-Source: p20-22
+Source: Child Poverty Action Group (2018, pp.20-22)
 
 The handbook was published during transition between two benefit systems: moving from a legacy system consisting of several sets of benefits and tax credits, to Universal Credit (UC). Whether claimants would be assessed under the legacy system or UC was dependent on date of initial claim, the area their home address was in, and several other conditions.
 
@@ -41,20 +43,20 @@ As with other rules, there are inputs to this decision which are themselves subj
 
 ## Ruleset 2 - Are you eligible for Universal Credit?
 
-Source: p31-33
+Source: Child Poverty Action Group (2018, pp.31-33)
 
 There are several requirements which must *all* be true for a claimant to be eligible for UC. UC normally treats a couple as a single unit for claim purposes, i.e. they make a single claim and are paid jointly. For a couple to be eligible to claim UC normally, all requirements must be true for both partners.
 
 The basic requirements to claim UC are that the claimant(s) are:
 
 * coming under UC, i.e. that rule 1 is true
-* aged 18 or over, or aged 16-17 and meet special young person UC eligibility criteria (detailed on p32-33)
+* aged 18 or over, or aged 16-17 and meet special young person UC eligibility criteria
 * aged below the qualifying age for Pension Credit (PC)
-* not receiving education (as defined on p32 and p566) unless you are exempted from this requirement (chapter 41)
-* in habitual residence in Great Britain and have the right to reside in Great Britain (both detailed in chapter 68)
-* either physically in or can be treated as being in Great Britain (chapter 68-69)
-* not a person subject to immigration control (p1529)
-* in acceptance of the claimant commitment (p1026)
+* not receiving education unless you are exempted from this requirement
+* in habitual residence in Great Britain and have the right to reside in Great Britain
+* either physically in or can be treated as being in Great Britain
+* not a person subject to immigration control
+* in acceptance of the claimant commitment
 
 It is possible for one member of a couple to claim as a single person if they meet the basic requirements themselves, but their partner fails to meet basic requirements in a certain, limited set of ways. In this situation, the claim works as if the claimant is a single person, *except* that both partners' income, savings and capital are still included in calculations.
 
@@ -67,9 +69,9 @@ The income ceiling ('too high an income') is not a fixed number - instead it ref
 
 ## Ruleset 3 - How much Universal Credit do you get?
 
-Source: p34-38
+Source: Child Poverty Action Group (2018, pp.34-38)
 
-Much of the detail on calculation of amounts in this section of the handbook simply repeats information from elsewhere in less detail, leaving a relatively simple ruleset. Within an assessment period, per steps four and five on page 38:
+Much of the detail on calculation of amounts in this section of the handbook simply repeats information from elsewhere in less detail, leaving a relatively simple ruleset. Within an assessment period, per steps four and five on Child Poverty Action Group (2018, p.38):
 
 `Universal Credit entitlement = maximum amount - earnings taper - unearned income`
 
@@ -77,7 +79,7 @@ The terms are defined in rules 4, 5 and 6, respectively. There is also a set of 
 
 ## Ruleset 4 - How much is your maximum amount of UC?
 
-Source: p59
+Source: Child Poverty Action Group (2018, p.59)
 
 The UC maximum amount is the sum of:
 
@@ -90,7 +92,7 @@ The UC maximum amount is the sum of:
 
 ## Ruleset 5 - What is the earnings taper?
 
-Source: p36-37
+Source: Child Poverty Action Group (2018, pp.36-37)
 
 `Earnings taper = maximum of 0 or (net earnings - work allowance) x 0.63`
 
@@ -102,21 +104,21 @@ where
 
 ## Ruleset 6 - What is unearned income for UC?
 
-Source: p37
+Source: Child Poverty Action Group (2018, p.37)
 
 This can include income from a large range of unearned sources, including certain other benefits, income from capital including rental income, and so on. No taper is applied to unearned income, so the full value is counted against the UC maximum amount.
 
 ## Ruleset 7 - The standard UC allowance
 
-Source: p59-60
+Source: Child Poverty Action Group (2018, pp.59-60)
 
 The standard UC allowance is £251.77 for a single claimant aged under 25, £317.82 for a single claimant aged 25 or over, £395.20 for a claiming couple both aged under 25, £498.89 for a claiming couple where at least one person is aged 25 or over.
 
 ## Ruleset 8 - An allowance for children under UC
 
-Source: p60-61
+Source: Child Poverty Action Group (2018, pp.60-61)
 
-A claimant or their partner are responsible for a child if the child 'normally' lives with them. A child counts toward the allowance if they are (i) under 16 years old, or (ii) if they are above or equal to 16 years old, below 20 years old, and meet the criteria for a 'qualifying young person' per p56.
+A claimant or their partner are responsible for a child if the child 'normally' lives with them. A child counts toward the allowance if they are (i) under 16 years old, or (ii) if they are above or equal to 16 years old, below 20 years old, and meet the criteria for a 'qualifying young person' per Child Poverty Action Group (2018, p.56).
 
 If the eldest qualifying child (i.e. the one with the earliest date of birth) was born before 06/04/2017, then the allowance element for that child is £277.08 per month (i.e. per assessment period). Otherwise, the allowance element for them is £231.67.
 
@@ -136,7 +138,7 @@ The total allowance for children under UC is the sum of the allowance elements.
 
 ## Ruleset 9 - An element for adults with limited capability for work or work-related activity due to illness under UC
 
-Source: p64-67
+Source: Child Poverty Action Group (2018, pp.64-67)
 
 There are two parts to this element:
 
@@ -149,7 +151,7 @@ There is complexity to the timing of eligibility - a newly qualifying claimant s
 
 ## Ruleset 10 - A carer element if one of the recipients cares for a severely disabled person under UC
 
-Source: p67-68
+Source: Child Poverty Action Group (2018, pp.67-68)
 
 If a claimant or their partner provides unpaid care for someone, for at least 35 hours per week, they are eligible for the carer element. Along with a range of criteria to establish whether someone actually is a carer in this definition, there are several caveats:
 
@@ -160,7 +162,7 @@ The carer element is £156.45 per month (i.e. per assessment period), or twice t
 
 ## Ruleset 11 - An allowance for childcare under UC
 
-Source: p68-70
+Source: Child Poverty Action Group (2018, pp.68-70)
 
 If a claimant pays for childcare in order to carry out paid work, then they are eligible for repayment of 85% of childcare costs, up to a maximum of £646.35 per month (i.e. per assessment period) for one child, or £1108.04 per month for two or more children. This comes with conditions, including:
 
@@ -173,7 +175,7 @@ There are further conditions, but they do not affect the basic rules. There is a
 
 ## Ruleset 12 - A housing costs element under UC
 
-Source: p72-106
+Source: Child Poverty Action Group (2018, pp.72-106)
 
 The rules surrounding housing costs eligibility are complex, and would be unrewarding to include in our current model, since they largely consist of a long array of conditions which would exclude a claimant from eligibility, and our modelling interest is primarily in the interaction of rules. Accordingly, a basic model is described in the following sections, which assumes those conditions are satisfied and a claimant is eligible.
 
@@ -190,7 +192,7 @@ If any of the remaining three status return a value that is 0 or less than 0, th
 
 ### Private tenant
 
-Source: p94-95
+Source: Child Poverty Action Group (2018, pp.94-95)
 
 The housing costs element for a private tenant is calculated as:
 
@@ -198,17 +200,17 @@ The housing costs element for a private tenant is calculated as:
 
 where
 
-`core rent = liable rent x number of relevant family members / total number of liable people` (p96)
+`core rent = liable rent x number of relevant family members / total number of liable people` (Child Poverty Action Group, 2018, p.96)
 
-`cap rent = local housing allowance for property with your allowed number of bedrooms` (p97)
+`cap rent = local housing allowance for property with your allowed number of bedrooms` (Child Poverty Action Group, 2018, p.97)
 
-`non-dependent deduction = £72.16 for each non-dependent who is resident and in your extended benefit unit` (p93)
+`non-dependent deduction = £72.16 for each non-dependent who is resident and in your extended benefit unit` (Child Poverty Action Group, 2018, p.93)
 
 The local housing allowance is an amount that varies by Broad Rental Market Area, i.e. house location, and by allowed number of bedrooms, i.e. the number of bedrooms deemed appropriate for the occupants of the house.
 
 ### Tenant of a registered social landlord
 
-Source: p98-99
+Source: Child Poverty Action Group (2018, pp.98-99)
 
 The calculation for a social tenancy is:
 
@@ -218,6 +220,6 @@ where bedroom tax is 0 if you have the allowed number of bedrooms for your famil
 
 ### Owner-occupier paying mandatory service charges
 
-Source: p101-104
+Source: Child Poverty Action Group (2018, pp.101-104)
 
 While e.g. mortgage repayments are not covered by UC, unavoidable service charges excluding charges for utilities such as water and electricity can be covered. However, there is a nine month qualifying period, so UC claimants who are owner-occupiers of their home will not receive any housing costs element until they have been claiming UC for nine months. There are several caveats to this rule, as always.
