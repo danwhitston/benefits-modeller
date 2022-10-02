@@ -1,9 +1,6 @@
 # Based on https://github.com/antlr/antlr4/blob/4.6/doc/python-target.md
-from operator import or_
-from symbol import for_stmt
 import sys
 from pathlib import Path
-from unittest import case
 from z3 import *
 
 import pdb
@@ -40,6 +37,13 @@ def main(argv):
 
 
 class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
+    # Helper functions
+    def Min(self, a, b):
+        return If(a < b, a, b)
+
+    def Max(self, a, b):
+        return If(a > b, a, b)
+
     '''
     Each node either visits its children, or processes the content
     of itself and its immediate children if it's at the lowest
@@ -136,8 +140,8 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
             if ctx.plusminus.text == "+":
                 return left + right
             else:  # ctx.plusminus.text == "~-"
-                # TODO: Add 0 lower bound
-                return left - right
+                # Add a zero-lower bound, the manual way
+                return self.Max(left - right, Int(0))
 
         if ctx.comparison is not None:
             op_text = ctx.comparison.text
@@ -159,9 +163,7 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
             return Or(left, right)
 
         if ctx.min_ is not None:
-            # TODO: Create Min function in Z3Py
-            return left
-            # return min(left, right)
+            return self.Min(left, right)
 
         if ctx.ite is not None:
             return self.visit(ctx.ite)
