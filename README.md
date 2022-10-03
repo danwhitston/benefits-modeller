@@ -42,9 +42,9 @@ The Antlr-produced lexer, parser and base listener are in [./lib/](./lib/).
 
 ### 4. Create a runner that takes language code and sample data
 
-The runner script is at [./src/ben_to_smtlib.py](./src/ben_to_smtlib.py).
+The runner script is at [./src/ben_to_z3.py](./src/ben_to_z3.py).
 
-Usage is like `python3 ben_to_smtlib.py SAMPLE_BENEFIT_RULES.ben`.
+Usage is like `python3 ben_to_z3.py SAMPLE_BENEFIT_RULES.ben`.
 
 ## Installation
 
@@ -97,7 +97,7 @@ Both of these tasks are accomplished by running a single script, as follows:
 
 ```sh
 cd src
-python3 ben_to_smtlib.py SAMPLE_BENEFIT_RULES.ben
+python3 ben_to_z3.py SAMPLE_BENEFIT_RULES.ben
 ```
 
 This assumes that both antlr4 and z3_solver are installed and accessible from the Python path.
