@@ -30,7 +30,7 @@ The handbook was published during transition between two benefit systems: moving
 
 A claimant comes under UC if either:
 
-1. Their date of claim for UC is after the rollout date for the Jobcentre area in which they're claiming, as listed in the PDF files linked at <https://www.gov.uk/government/publications/universal-credit-transition-to-full-service>. The rollout areas are often known as 'full service' areas. We know from the linked URL that rollout completed in December 2018, in accordance with the target date stated on p22 of the handbook.
+1. Their date of claim for UC is after the rollout date for the Jobcentre area in which they're claiming, as listed in the PDF files at Department for Work and Pensions (2016). The rollout areas are often known as 'full service' areas. We know from the linked URL that rollout completed in December 2018, in accordance with the target date stated on p22 of the handbook.
 2. Their date of claim for UC is before 1/1/2018, and after April 2016, and the Jobcentre area in which they're claiming is a UC gateway area, and they meet a long list of gateway conditions that are fully detailed in Chapter 2 of the 2017/18 edition of the handbook. An immediate consequence of the date limitations discussed earlier on is that our model completely excludes UC gateway claimants, since we're taking new claims from 5/3/2018.
 
 There is an exception to the rule for full service areas: claimants with three or more children, and who meet certain other conditions, should continue to claim legacy benefits for claims between 6/04/2017 and 31/01/2019 (i.e. during the modelled period).
