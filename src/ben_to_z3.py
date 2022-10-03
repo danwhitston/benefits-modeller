@@ -2,7 +2,6 @@
 import sys
 from pathlib import Path
 from z3 import *
-
 import pdb
 
 # Add lib to system path so we can import the generated files
@@ -26,14 +25,22 @@ def main(argv):
     Takes a BEN file as input, outputs to SMT-LIB2 with same filename,
     different extension
     '''
+    global s
     program = FileStream(fileName=argv[1], encoding='utf-8')
     lexer = BENEFIT_LANGUAGELexer(program)
     stream = CommonTokenStream(lexer)
     parser = BENEFIT_LANGUAGEParser(stream)
     tree = parser.file_()
     smt_lib_converter = SmtLibConverter()
+    print("Begun solver setup")
     output = smt_lib_converter.visit(tree)
-    print(output)
+    print("Completed solver setup")
+    if s.check() == sat:
+        print("\nThe system is satisfiable.")
+    else:
+        print("\nThe system is not satisfiable.")
+    # Drop to REPL. The output is present if wanted
+    pdb.set_trace()
 
 
 class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
@@ -54,7 +61,6 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#file.
     def visitFile(self, ctx: BENEFIT_LANGUAGEParser.FileContext):
-        print("Begun solver setup")
         return self.visitChildren(ctx)
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#statements.
