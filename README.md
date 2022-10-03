@@ -29,12 +29,9 @@ The informal language definition can be found in the project report.
 
 The rules, expressed in the newly defined language, can be found at [./src/SAMPLE_BENEFIT_RULES.ben](./src/SAMPLE_BENEFIT_RULES.ben).
 
-The test cases, expressed in the newly defined language, can be found at [./src/tests.ben](./src/tests.ben).
-
-
 ### 3. Create a parser to parse the benefit rule language
 
-The parser generator ANTLR 4 was used to generate the language parser.
+The parser generator ANTLR4 was used to generate the language parser.
 
 The lexer and parser definition is in [./BENEFIT_LANGUAGE.g4](./BENEFIT_LANGUAGE.g4)
 
@@ -60,7 +57,7 @@ For ease of development, the Antlr grammar was converted into a parser in Python
 pip install antlr4-python3-runtime
 ```
 
-To run the Python script that uses the parser to translate code into SMT-LIB2, you'll need to install Z3 which is used as the provider of SMT-LIB2 solving:
+To run the Python script that parses and executes the code, you'll need to install Z3 which is used as the provider of SMT solving:
 
 ```sh
 pip install z3-solver
@@ -91,9 +88,9 @@ Alternatively, to recompile the grammar into a Python parser, WHICH IS WHAT GETS
 antlr4 -o ./lib/ -Dlanguage=Python3 -visitor -no-listener BENEFIT_LANGUAGE.g4
 ```
 
-### Parsing BEN code and solving it in SMT-LIB2
+### Parsing BEN code and solving it with Z3
 
-BEN is the name of the Domain Specific Language that's been developed to represent benefit logic in this project. By parsing a BEN file with the grammar, we can determine if the basic structure meets the requirements of a BEN program. Once that's been done we can tie our own code in using the Listener pattern to traverse the created structure and convert each element into SMT-LIB2.
+BEN is the name of the Domain Specific Language that's been developed to represent benefit logic in this project. By parsing a BEN file with the grammar, we can determine if the basic structure meets the requirements of a BEN program. Once that's been done we can tie our own code in using the Visitor pattern to traverse the created structure and convert each element into Z3.
 
 Both of these tasks are accomplished by running a single script, as follows:
 
