@@ -16,9 +16,6 @@ Source: p38
 
 Situation: Gail and Joe are a couple, both over 25 years old and under pension age. Gail's monthly earnings are £1200. Joe has limited capability for work and work-related activity, for which he receives a non-UC benefit with unearned monthly income of £479.91. They have no eligible housing or childcare costs, and no other unearned income.
 
-Joe's ESA counts for both the maximum UC and the unearned income! Oy vey.
+Joe's ESA counts for both the maximum UC and the unearned income!
 
 Inference: Their monthly UC entitlement is £312.31
-
-498.89+231.67+231.67
- - (1200 * 0.63) - 479.91
