@@ -44,7 +44,6 @@ Money local_housing_allowance_for_your_family
 Integer number_of_nondependant_family_occupants
 Money rent
 Integer uc_housing_excess_bedrooms
-
 Money combined_savings
 Money uc_work_allowance
 Money uc_unearned_income # This is ruleset 6, oddly
