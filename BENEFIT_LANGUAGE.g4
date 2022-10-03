@@ -14,11 +14,15 @@ file
   ;
 
 statements
-  : statement+
+  : (statement | test_statement)+
   ;
 
 statement
   : (comment | declare_function | declare_variable | declare_enum_type | declare_enum_variable)
+  ;
+
+test_statement
+  : (assign_variable | verify_value)
   ;
 
 /*
@@ -27,12 +31,12 @@ statement
 
 // Set a variable equal to a value
 assign_variable
-  : 'let' VARIABLE_NAME '=' value
+  : LET VARIABLE_NAME '=' (value | enum_reference)
   ;
 
 // Verify that a variable is equal to a value
 verify_value
-  : 'verify' VARIABLE_NAME '==' value
+  : 'verify' VARIABLE_NAME '==' (value | enum_reference)
   ;
 
 /*
@@ -154,6 +158,10 @@ CLOSE_BRACKET
 
 COMMENT
   : HASH_SYMBOL REST_OF_LINE
+  ;
+
+LET // Above VARIABLE_NAME
+  : 'let'
   ;
 
 MIN // This operator goes above VARIABLE_NAME to establish precedence

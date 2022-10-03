@@ -45,7 +45,6 @@ Integer number_of_nondependant_family_occupants
 Money rent
 Integer uc_housing_excess_bedrooms
 Money combined_savings
-Money uc_work_allowance
 Money uc_unearned_income # This is ruleset 6, oddly
 
 
@@ -82,11 +81,72 @@ Boolean partner_eligible_for_uc = {
   and (partner_has_accepted_partner_commitment == true)
 }
 
+# Ruleset 12 - A housing costs element under UC
+
+# The qualifying period makes £0 the default value for new claims
+Money uc_housing_owner_occupier_cost = {
+  £0
+}
+
+Money uc_housing_bedroom_tax = {
+  if uc_housing_excess_bedrooms == 0
+  then £0
+  else (
+    if uc_housing_excess_bedrooms == 1
+    then rent * 14%
+    else rent * 25%
+  )
+}
+
+Money uc_housing_social_cost = {
+  rent ~- uc_housing_bedroom_tax
+}
+
+Money uc_nondependent_deduction = {
+  £72.16 * number_of_nondependant_family_occupants
+}
+
+Money uc_housing_private_cap_rent = {
+  local_housing_allowance_for_your_family
+}
+
+Money uc_housing_private_core_rent = {
+  (rent * number_of_relevant_family_occupants) / number_of_liable_occupants  
+}
+
+Money uc_housing_private_cost = {
+  (uc_housing_private_core_rent min uc_housing_private_cap_rent) ~- uc_nondependent_deduction
+}
+
+Money uc_housing_costs_element = {
+  if uc_housing_type == Housing_type.none
+  then £0
+  else (
+    if uc_housing_type == Housing_type.private
+    then uc_housing_private_cost
+    else (
+      if uc_housing_type == Housing_type.social
+      then uc_housing_social_cost
+      else uc_housing_owner_occupier_cost
+    )
+  )
+}
+
 # Ruleset 5 - What is the earnings taper?
 # We've reversed order of definitions because our solver requires
 # variables to be defined *before* we use them
 Money uc_net_earnings = {
   claimant_net_earnings + partner_net_earnings
+}
+
+Money uc_work_allowance = {
+  if (number_of_children > 0) or (claimant_has_limited_capability_for_work_related_activity == true or partner_has_limited_capability_for_work_related_activity == true)
+  then (
+    if uc_housing_costs_element > 0
+    then £198
+    else £409
+    )
+  else £0
 }
 
 Money uc_earnings_taper = {
@@ -186,57 +246,6 @@ Money uc_childcare_element = {
   else £0
 }
 
-# Ruleset 12 - A housing costs element under UC
-
-# The qualifying period makes £0 the default value for new claims
-Money uc_housing_owner_occupier_cost = {
-  £0
-}
-
-Money uc_housing_bedroom_tax = {
-  if uc_housing_excess_bedrooms == 0
-  then £0
-  else (
-    if uc_housing_excess_bedrooms == 1
-    then rent * 14%
-    else rent * 25%
-  )
-}
-
-Money uc_housing_social_cost = {
-  rent ~- uc_housing_bedroom_tax
-}
-
-Money uc_nondependent_deduction = {
-  £72.16 * number_of_nondependant_family_occupants
-}
-
-Money uc_housing_private_cap_rent = {
-  local_housing_allowance_for_your_family
-}
-
-Money uc_housing_private_core_rent = {
-  (rent * number_of_relevant_family_occupants) / number_of_liable_occupants  
-}
-
-Money uc_housing_private_cost = {
-  (uc_housing_private_core_rent min uc_housing_private_cap_rent) ~- uc_nondependent_deduction
-}
-
-Money uc_housing_costs_element = {
-  if uc_housing_type == Housing_type.none
-  then £0
-  else (
-    if uc_housing_type == Housing_type.private
-    then uc_housing_private_cost
-    else (
-      if uc_housing_type == Housing_type.social
-      then uc_housing_social_cost
-      else uc_housing_owner_occupier_cost
-    )
-  )
-}
-
 # Ruleset 4 - How much is your maximum amount of UC?
 # We've reversed order of definitions because our solver requires
 # variables to be defined *before* we use them
@@ -265,3 +274,17 @@ Boolean eligible_for_uc = {
   and (combined_savings <= £16000)
   and (uc_entitlement > £0)
 }
+
+# Test Case 1
+let rolled_out_to_full_service = true
+let date_of_claim = '2018-05-03' # Juuuust in the valid period
+let is_couple = true
+let age_of_claimant = 26
+let age_of_partner = 26
+let number_of_children = 2
+let dob_of_eldest_child = '2017-04-06' # Juuuust in the valid period
+let claimant_net_earnings = £1
+let partner_net_earnings = £0
+let partner_has_limited_capability_for_work_related_activity = true # Is this correct?
+let uc_housing_type = Housing_type.none
+let uc_unearned_income = £0

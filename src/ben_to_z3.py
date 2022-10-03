@@ -65,6 +65,34 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
     def visitStatement(self, ctx: BENEFIT_LANGUAGEParser.StatementContext):
         return self.visitChildren(ctx)
 
+    # Visit a parse tree produced by BENEFIT_LANGUAGEParser#test_statement.
+    def visitTest_statement(self, ctx: BENEFIT_LANGUAGEParser.Test_statementContext):
+        return self.visitChildren(ctx)
+
+    # Visit a parse tree produced by BENEFIT_LANGUAGEParser#assign_variable.
+    def visitAssign_variable(self, ctx: BENEFIT_LANGUAGEParser.Assign_variableContext):
+        '''
+        Let a variable = a value, as part of test case setup
+        '''
+        global s
+        global solver_objects
+        var_name = ctx.VARIABLE_NAME().getText()
+        if ctx.value() is not None:
+            var_value = self.visit(ctx.value())
+        else:
+            var_value = self.visit(ctx.enum_reference())
+        # pdb.set_trace()
+        print(solver_objects[var_name], " == ", var_value)
+        s.add(solver_objects[var_name] == var_value)
+
+    # Visit a parse tree produced by BENEFIT_LANGUAGEParser#verify_value.
+    def visitVerify_value(self, ctx: BENEFIT_LANGUAGEParser.Verify_valueContext):
+        '''
+        verify that a variable == a value, i.e. must be that value, to confirm test case output
+        '''
+        pdb.set_trace()
+        return self.visitChildren(ctx)
+
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#declare_function.
     def visitDeclare_function(self, ctx: BENEFIT_LANGUAGEParser.Declare_functionContext):
         global s
@@ -87,7 +115,8 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
         global s
         var_type = ctx.getChild(0).getText()
         var_name = ctx.getChild(1).getText()
-        # TODO: Create Money, Percent, Dayte datatypes, or just treat as Int?
+        # There is currently no way of carrying out type checking
+        # TODO: Create and use custom types to ensure type safety?
         if var_type == "Integer":
             solver_objects[var_name] = Int(var_name)
             # To force non-negative integer, we assert a constraint on values taken
@@ -172,6 +201,8 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
         if ctx.atom is not None:
             return self.visit(ctx.atom)
 
+        raise ValueError("Somehow, an expression doesn't match any of the possible expression tokenisations")
+
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#if_then_else.
     def visitIf_then_else(self, ctx: BENEFIT_LANGUAGEParser.If_then_elseContext):
         # In the current definition, if, then, else are elements 0, 2, 4
@@ -187,9 +218,7 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
             var_name = ctx.getText()
             return solver_objects[var_name]
         else:  # ctx.enum_reference() is not None
-            enum_var = solver_objects[ctx.enum_reference().ENUM_VARIABLE_NAME().getText()]
-            enum_attribute = ctx.enum_reference().VARIABLE_NAME().getText()
-            return getattr(enum_var, enum_attribute)
+            return self.visit(ctx.enum_reference())
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#value.
     def visitValue(self, ctx: BENEFIT_LANGUAGEParser.ValueContext):
@@ -201,15 +230,17 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
         tokens present in the ordering to ensure that a value is
         matched and tokenised appropriately.
         '''
-        # TODO Return an actual value, of correct sort
+        # TODO: This also could use some type safety
         if ctx.PERCENT() is not None:
-            pdb.set_trace()
-            # Yep, we're treating x% as x / 100, both Z3 ints
-            return IntVal(ctx.percent().INTEGER().getText()) / IntVal(100)
+            # Treating x% as x / 100, both Z3 ints
+            return IntVal(ctx.getText()[:-1]) / IntVal(100)
         elif ctx.MONEY() is not None:
-            pdb.set_trace()
-            # TODO: Return a money value
-            return 24
+            # Treat money as an IntVal of total in pence
+            money_array = ctx.MONEY().getText()[1:].split(".")
+            money_val = int(money_array[0]) * 100
+            if len(money_array) == 2:
+                money_val += int(money_array[1])
+            return IntVal(money_val)
         elif ctx.DATE() is not None:
             # We save the full date as a string value in Z3Py,
             # because Z3Py supports < <= > >= on strings nowadays
@@ -220,10 +251,17 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
             # Note that lower() is strictly unnecessary; True doesn't parse
             return BoolVal(ctx.getText().lower() == 'true')
 
+    # Visit a parse tree produced by BENEFIT_LANGUAGEParser#enum_reference.
+    def visitEnum_reference(self, ctx: BENEFIT_LANGUAGEParser.Enum_referenceContext):
+        enum_var = solver_objects[ctx.ENUM_VARIABLE_NAME().getText()]
+        enum_attribute = ctx.VARIABLE_NAME().getText()
+        return getattr(enum_var, enum_attribute)
+
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#comment.
     def visitComment(self, ctx: BENEFIT_LANGUAGEParser.CommentContext):
-        # We return nothing, but print for information
-        print(ctx.getText())
+        # We return nothing
+        # print(ctx.getText())
+        pass
 
 
 if __name__ == '__main__':

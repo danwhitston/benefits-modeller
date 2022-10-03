@@ -24,6 +24,11 @@ class BENEFIT_LANGUAGEVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by BENEFIT_LANGUAGEParser#test_statement.
+    def visitTest_statement(self, ctx:BENEFIT_LANGUAGEParser.Test_statementContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#assign_variable.
     def visitAssign_variable(self, ctx:BENEFIT_LANGUAGEParser.Assign_variableContext):
         return self.visitChildren(ctx)
