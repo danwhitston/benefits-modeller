@@ -81,17 +81,28 @@ class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
             var_value = self.visit(ctx.value())
         else:
             var_value = self.visit(ctx.enum_reference())
-        # pdb.set_trace()
         print(solver_objects[var_name], " == ", var_value)
         s.add(solver_objects[var_name] == var_value)
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#verify_value.
     def visitVerify_value(self, ctx: BENEFIT_LANGUAGEParser.Verify_valueContext):
         '''
-        verify that a variable == a value, i.e. must be that value, to confirm test case output
+        Verify that a variable == a value, i.e. must be that value, to confirm test case output
         '''
-        pdb.set_trace()
-        return self.visitChildren(ctx)
+        global s
+        global solver_objects
+        var_name = ctx.VARIABLE_NAME().getText()
+        if ctx.value() is not None:
+            var_value = self.visit(ctx.value())
+        else:
+            var_value = self.visit(ctx.enum_reference())
+
+        if s.check() == sat:
+            print("\nThe system is satisfiable.")
+        else:
+            print("\nThe system is not satisfiable.")
+        print("\nResult of validity check:")
+        print(prove(solver_objects[var_name] == var_value))
 
     # Visit a parse tree produced by BENEFIT_LANGUAGEParser#declare_function.
     def visitDeclare_function(self, ctx: BENEFIT_LANGUAGEParser.Declare_functionContext):

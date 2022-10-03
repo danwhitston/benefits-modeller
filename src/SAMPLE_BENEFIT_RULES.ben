@@ -288,3 +288,5 @@ let partner_net_earnings = £0
 let partner_has_limited_capability_for_work_related_activity = true # Is this correct?
 let uc_housing_type = Housing_type.none
 let uc_unearned_income = £0
+
+verify uc_maximum_amount == £1290.55
