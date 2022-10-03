@@ -19,13 +19,13 @@ Each stage is documented below, with links to corresponding files.
 
 ### 1. Create a sample set of benefit rules and test cases
 
-The sample set of benefit rules can be found at [./SAMPLE_BENEFIT_RULES.md](./SAMPLE_BENEFIT_RULES.md).
+The sample set of benefit rules can be found in the project report.
 
 The sample test cases can be found at [./SAMPLE_TEST_CASES.md](./SAMPLE_TEST_CASES.md).
 
 ### 2. Define a language for expressing benefit rules
 
-The informal language definition can be found at [./LANGUAGE_DERIVATION.md](./LANGUAGE_DERIVATION.md).
+The informal language definition can be found in the project report.
 
 The rules, expressed in the newly defined language, can be found at [./src/SAMPLE_BENEFIT_RULES.ben](./src/SAMPLE_BENEFIT_RULES.ben).
 
@@ -72,7 +72,9 @@ There are several levels of use of the codebase in its current state of developm
 
 ### Compiling the grammar definition
 
-To recompile the grammar, e.g. if you update the parser or if you want to compile and explore the grammar using Java features such as `grun` GUI output, you'll need Java installed. You'll also need to install Antlr4 as detailed at <https://github.com/antlr/antlr4/blob/master/doc/getting-started.md#unix>. Then, for example if you want to compile the grammar in Java and display a tree representation of some BEN code:
+To recompile the grammar in Java, e.g. if you want to compile and explore the grammar using Java features such as `grun` GUI output, you'll need Java installed. You'll also need to install Antlr4 as detailed at <https://github.com/antlr/antlr4/blob/master/doc/getting-started.md#unix>.
+
+Then, for example if you want to compile the grammar in Java and display a tree representation of some BEN code:
 
 ```sh
 antlr4 -o ./lib/ BENEFIT_LANGUAGE.g4
@@ -83,7 +85,7 @@ grun ./lib/BENEFIT_LANGUAGE file -gui
 # Explore the GUI representation of the parse tree
 ```
 
-To recompile the grammar into a Python parser, use:
+Alternatively, to recompile the grammar into a Python parser, WHICH IS WHAT GETS USED BY OUR RUNNER SCRIPT, use:
 
 ```sh
 antlr4 -o ./lib/ -Dlanguage=Python3 -visitor -no-listener BENEFIT_LANGUAGE.g4

@@ -8,7 +8,7 @@ grammar BENEFIT_LANGUAGE;
  */
 
 // Top-level structure
-// from https://tomassetti.me/best-practices-for-antlr-parsers/
+// from Tomassetti (2021)
 file
   : statements EOF
   ;
@@ -23,20 +23,21 @@ statement
 
 /*
  * Test file / solver statements
- * These are commented out until we have a test file and a way
- * of handling them, as there's nothing to parse until then
- * They'll also need fixing before they actually work
  */
 
-// assign_variable
-//   : VARIABLE_NAME ASSIGN_EQUAL_TO value
-//   ;
+// Set a variable equal to a value
+assign_variable
+  : 'let' VARIABLE_NAME '=' value
+  ;
 
-// assert_value
-//   : 'assert' VARIABLE_NAME IS_EQUAL_TO value
-//   ;
+// Verify that a variable is equal to a value
+verify_value
+  : 'verify' VARIABLE_NAME '==' value
+  ;
 
-// BEN statements
+/*
+ * Ben model statements
+ */
 
 declare_function
   : declare_variable '=' '{' expression '}'
@@ -94,8 +95,6 @@ comment
 /* 
  * Lexer
  */
-
-// Data representations
 
 PERCENT
   : INTEGER '%'
@@ -157,8 +156,6 @@ COMMENT
   : HASH_SYMBOL REST_OF_LINE
   ;
 
-// Operators - precedence order is important
-
 MIN // This operator goes above VARIABLE_NAME to establish precedence
   : 'min'
   ;
@@ -177,7 +174,6 @@ VARIABLE_NAME
   : (LOWER_CASE_LETTER | UNDERSCORE)+
   ;
 
-// This potentially skips all
 WHITESPACE
   : [ \t]+ -> skip
   ;
@@ -186,7 +182,7 @@ NEWLINE
   : ('\r' | '\n')+ -> skip
   ;
 
-// from https://tomassetti.me/best-practices-for-antlr-parsers/
+// from Tomassetti (2021)
 ANY
   : .
   ;
@@ -228,7 +224,6 @@ fragment UPPER_CASE_LETTER
 fragment LOWER_CASE_LETTER
   : [a-z]
   ;
-
 
 fragment HASH_SYMBOL
   : '#'
