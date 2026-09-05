@@ -6,6 +6,8 @@ This repository contains code, examples, and documentation for a programmable mo
 
 The engine is written using a custom-created DSL called Ben. A grammar, parser, and runner for Ben are also included in the repo. Code written in Ben has the filename extension `.ben`.
 
+The full project report, including the sample benefit rules, the language definition, and a discussion of the engine's limits and possible next steps, is at [./PROJECT_REPORT.pdf](./PROJECT_REPORT.pdf).
+
 ## Development areas
 
 The project is being developed in four distinct stages:
@@ -19,13 +21,13 @@ Each stage is documented below, with links to corresponding files.
 
 ### 1. Create a sample set of benefit rules and test cases
 
-The sample set of benefit rules can be found in the project report.
+The sample set of benefit rules can be found in the [project report](./PROJECT_REPORT.pdf), under Objective 1.
 
 The sample test cases can be found at [./SAMPLE_TEST_CASES.md](./SAMPLE_TEST_CASES.md).
 
 ### 2. Define a language for expressing benefit rules
 
-The informal language definition can be found in the project report.
+The informal language definition can be found in the [project report](./PROJECT_REPORT.pdf), under Objective 2.
 
 The rules, expressed in the newly defined language, can be found at [./src/SAMPLE_BENEFIT_RULES.ben](./src/SAMPLE_BENEFIT_RULES.ben).
 

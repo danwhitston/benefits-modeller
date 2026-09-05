@@ -1,6 +1,6 @@
 # Sample test cases
 
-Objective 1 of the project is to create a sample set of benefit rules and test cases. The benefit rules are described in `./SAMPLE_BENEFIT_RULES.md`. This document provides a set of example benefit calculations and hypotheses with known truth values. While they do not provide comprehensive coverage of the sample rules, any system that correctly models the described benefit rules should match the test cases in this document.
+Objective 1 of the project is to create a sample set of benefit rules and test cases. The benefit rules are described in the [project report](./PROJECT_REPORT.pdf), under Objective 1, and expressed in Ben in [./src/SAMPLE_BENEFIT_RULES.ben](./src/SAMPLE_BENEFIT_RULES.ben). This document provides a set of example benefit calculations and hypotheses with known truth values. While they do not provide comprehensive coverage of the sample rules, any system that correctly models the described benefit rules should match the test cases in this document.
 
 ## Example 1 - UC maximum amount, with Gail and Joe
 
