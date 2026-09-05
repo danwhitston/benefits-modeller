@@ -39,8 +39,10 @@ def main(argv):
         print("\nThe system is satisfiable.")
     else:
         print("\nThe system is not satisfiable.")
-    # Drop to REPL. The output is present if wanted
-    pdb.set_trace()
+    # Optionally drop to a debugger REPL to inspect the solver state,
+    # e.g. python3 ben_to_z3.py SAMPLE_BENEFIT_RULES.ben --debug
+    if "--debug" in argv[2:]:
+        pdb.set_trace()
 
 
 class SmtLibConverter(BENEFIT_LANGUAGEVisitor):
