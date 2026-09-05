@@ -48,19 +48,13 @@ Usage is like `python3 ben_to_z3.py SAMPLE_BENEFIT_RULES.ben`.
 First, download the code to your local environment. The code was developed using Windows Subsystem for Linux on a Windows machine, which means it has been tested and works on a current version of Ubuntu.
 
 ```sh
-git clone git@github.com:Birkbeck/msc-computer-science-project-2021_22-danwhitston.git
+git clone git@github.com:danwhitston/benefits-modeller.git
 ```
 
-For ease of development, the Antlr grammar was converted into a parser in Python, rather than the default Java. You'll need Python 3 and pip installed to use the Python parser. You'll also need to install the Antlr4 runtime library for Python:
+For ease of development, the Antlr grammar was converted into a parser in Python, rather than the default Java. You'll need Python 3 and pip installed to use the Python parser. The two runtime dependencies are the Antlr4 runtime library for Python, pinned to the version the parser in `./lib/` was generated with, and Z3, which is used as the provider of SMT solving:
 
 ```sh
-pip install antlr4-python3-runtime
-```
-
-To run the Python script that parses and executes the code, you'll need to install Z3 which is used as the provider of SMT solving:
-
-```sh
-pip install z3-solver
+pip install -r requirements.txt
 ```
 
 ## Usage
